@@ -219,7 +219,7 @@ async function main() {
   }
 
   // --- Historical completed visits (drives dashboard revenue) -------------
-  const paymentMethods = ["CASH", "MOBILE_MONEY", "CASH", "MOBILE_MONEY", "CARD"];
+  const paymentMethods = ["CASH", "MTN_MOMO", "ORANGE_MONEY", "CASH", "MTN_MOMO"];
   const commonBaskets = [
     [{ drugName: "Coartem", quantity: 1 }, { drugName: "Paracetamol", quantity: 12 }],
     [{ drugName: "Amoxicillin", quantity: 21 }, { drugName: "Ibuprofen", quantity: 10 }],

@@ -15,8 +15,8 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import {
   formatFCFA,
+  PAYMENT_METHODS,
   PAYMENT_METHOD_LABELS,
-  type PaymentMethod,
   type Role,
 } from "@/lib/constants";
 import { StatTile } from "@/components/stat-tile";
@@ -121,9 +121,10 @@ export default async function DashboardPage() {
     day: d.label,
     visits: visitsByDay.get(d.key)!,
   }));
-  const paymentData = (["CASH", "MOBILE_MONEY", "CARD", "INSURANCE"] as const).map(
-    (m) => ({ name: PAYMENT_METHOD_LABELS[m], value: paymentTotals.get(m) ?? 0 }),
-  );
+  const paymentData = PAYMENT_METHODS.map((m) => ({
+    name: PAYMENT_METHOD_LABELS[m],
+    value: paymentTotals.get(m) ?? 0,
+  }));
   const weekRevenue = revenueData.reduce((s, d) => s + d.revenue, 0);
   const lowStock = drugs
     .filter((d) => d.quantityInStock <= d.reorderLevel)

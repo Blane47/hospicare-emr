@@ -60,14 +60,15 @@ export const STOCK_MOVEMENT_TYPES = [
 export type StockMovementType = (typeof STOCK_MOVEMENT_TYPES)[number];
 
 // ---- Payment methods (Cameroon context) ------------------------------------
-export const PAYMENT_METHODS = ["CASH", "MOBILE_MONEY", "CARD", "INSURANCE"] as const;
+// Cameroonian clinics take cash and mobile money only — the two mobile-money
+// providers are MTN Mobile Money and Orange Money. No cards.
+export const PAYMENT_METHODS = ["CASH", "MTN_MOMO", "ORANGE_MONEY"] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   CASH: "Cash",
-  MOBILE_MONEY: "Mobile Money (MTN / Orange)",
-  CARD: "Bank Card",
-  INSURANCE: "Insurance",
+  MTN_MOMO: "MTN Mobile Money",
+  ORANGE_MONEY: "Orange Money",
 };
 
 // ---- Drug forms ------------------------------------------------------------
