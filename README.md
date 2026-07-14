@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HospiCare — Hospital Management System (EMR + Pharmacy)
 
-## Getting Started
+A hospital management system built for the Cameroonian context, covering the
+two daily pain points of a district hospital: **electronic medical records
+(EMR)** and **pharmacy management**. One patient flows through the whole
+system — reception → doctor → pharmacy — with every action persisted and
+connected.
 
-First, run the development server:
+> Internship project. Built with Next.js, Prisma and PostgreSQL/SQLite.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## Features
+
+The system has four staff roles, each with its own view and permissions.
+
+| Role | Can do |
+| --- | --- |
+| **Receptionist** | Register patients, start visits (add to the doctor queue) |
+| **Doctor** | Attend to waiting patients, record vitals & diagnosis, write prescriptions |
+| **Pharmacist** | Dispense prescriptions, manage drug inventory, sell over the counter, print receipts |
+| **Administrator** | Everything above + staff management + full analytics |
+
+**Core capabilities**
+- 🔐 Secure authentication with **role-based access control** (enforced server-side)
+- 👤 **Patient records** — register, search, full profile with visit history and allergy alerts
+- 🩺 **Consultations** — vitals, diagnosis, clinical notes, and a live prescription builder
+- 💊 **Pharmacy** — dispense against prescriptions with **automatic stock deduction**,
+  a full **auditable stock ledger**, **low-stock alerts**, walk-in point of sale,
+  and **printable receipts**
+- 📊 **Dashboard** — role-aware KPIs and charts (revenue, visits, payment mix, low stock)
+- 🇨🇲 **Cameroon context** — amounts in **FCFA** (integer money, no rounding bugs),
+  Mobile Money / Orange Money payment options, Cameroonian regions
+
+---
+
+## Tech stack
+
+- **Next.js 16** (App Router, Server Components, Server Actions) + **React 19** + **TypeScript**
+- **Prisma 6** ORM — SQLite in development, PostgreSQL in production (portable schema)
+- **Auth.js (NextAuth v5)** — credentials auth, JWT sessions, edge middleware guard
+- **Tailwind CSS 4** + **shadcn/ui** (Base UI) — professional, accessible component system
+- **Recharts** — dashboard visualisations
+- **Zod** — end-to-end input validation
+
+---
+
+## Data model (overview)
+
+```
+User ──< Patient ──< Visit ──1 Consultation ──1 Prescription ──< PrescriptionItem >── Drug
+                        │                                                              │
+                        └──────────< Sale >── SaleItem ───────────────────────────────┘
+                                                     Drug ──< StockMovement (audit ledger)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Money** is stored as integers in FCFA (the CFA franc has no minor unit).
+- **Stock** is never changed blindly — every movement (purchase, dispense,
+  adjustment) is written to `StockMovement`, giving a complete audit trail.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Getting started
 
-## Learn More
+```bash
+# 1. Install dependencies
+npm install
 
-To learn more about Next.js, take a look at the following resources:
+# 2. Set up the database (creates dev.db + runs migrations)
+npx prisma migrate dev
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# 3. Load realistic demo data
+npm run db:seed
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# 4. Run the app
+npm run dev
+```
 
-## Deploy on Vercel
+Open http://localhost:3000.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Demo accounts (password: `password123`)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Email | Role |
+| --- | --- |
+| `admin@hospital.cm` | Administrator |
+| `doctor@hospital.cm` | Doctor |
+| `pharmacist@hospital.cm` | Pharmacist |
+| `reception@hospital.cm` | Receptionist |
+
+---
+
+## Useful scripts
+
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the development server |
+| `npm run build` | Production build (type-checks the whole app) |
+| `npm run db:seed` | Reset & load demo data |
+| `npm run db:studio` | Open Prisma Studio (browse the database) |
+| `npm run db:migrate` | Create/apply a migration |
+| `node scripts/e2e.js` | Run the end-to-end workflow test (requires the dev server) |
+
+---
+
+## Try the full workflow
+
+1. **Reception** (`reception@hospital.cm`) → Patients → *Register patient* → open the
+   profile → *Start visit*.
+2. **Doctor** (`doctor@hospital.cm`) → Patient Queue → *Attend* → record vitals &
+   diagnosis → add a drug to the prescription → *Save & send to pharmacy*.
+3. **Pharmacist** (`pharmacist@hospital.cm`) → Dispensing → *Dispense* → *Confirm* →
+   a receipt is generated, stock is reduced, and the visit is completed.
+4. **Admin** (`admin@hospital.cm`) → Dashboard to see it reflected in the analytics.
+
+---
+
+## Architecture notes
+
+- **Server-side access control.** The navigation only *hides* links a role can't
+  use; every protected page and every server action independently calls
+  `requireRole(...)`, so access is truly enforced, not just visually hidden.
+- **Transactions.** Dispensing runs inside a database transaction: it checks
+  stock, records the sale, writes ledger entries, updates the prescription and
+  completes the visit — all atomically.
+- **Portable schema.** "Enum-like" fields are stored as strings and validated by
+  Zod, so the exact same schema runs on SQLite (dev) and PostgreSQL (prod).
+
+## Future work
+
+Scoped out of this version but designed for:
+- **Telemedicine** — remote consultations for patients who can't travel
+- **Public website & online appointment booking**
+- Laboratory & imaging orders, billing / insurance (CNAM), SMS reminders
+- Offline-first support for areas with unreliable connectivity

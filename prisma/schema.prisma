@@ -1,0 +1,235 @@
+// ============================================================================
+//  Hospital EMR + Pharmacy — Data Model
+//  ORM: Prisma  |  Dev DB: SQLite  |  Prod DB: PostgreSQL (portable schema)
+//
+//  Design notes:
+//   * "Enum-like" fields are modelled as String and validated at the
+//     application layer with Zod (see src/lib/constants.ts). This keeps the
+//     schema portable across SQLite (dev) and PostgreSQL (prod), since SQLite
+//     does not support native enums.
+//   * Money is stored as Int in FCFA. The CFA franc has no minor unit
+//     (no "cents"), so integers are exact — no floating-point money bugs.
+//   * Stock is never mutated blindly: every change is written to the
+//     StockMovement ledger, giving a full, auditable inventory history.
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+//  Users & access control
+// ---------------------------------------------------------------------------
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String // ADMIN | DOCTOR | PHARMACIST | RECEPTIONIST
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations — what this user has done in the system (audit trail)
+  registeredPatients Patient[]       @relation("PatientCreatedBy")
+  visitsCreated      Visit[]         @relation("VisitCreatedBy")
+  consultations      Consultation[] // as the attending doctor
+  sales              Sale[] // as the pharmacist who sold
+  stockMovements     StockMovement[] // stock changes they made
+}
+
+// ---------------------------------------------------------------------------
+//  Patients
+// ---------------------------------------------------------------------------
+model Patient {
+  id            String   @id @default(cuid())
+  patientNumber String   @unique // human-readable ID, e.g. "P-000123"
+  firstName     String
+  lastName      String
+  dateOfBirth   DateTime
+  gender        String // MALE | FEMALE | OTHER
+  phone         String?
+  email         String?
+  address       String?
+  city          String?
+  region        String?
+  bloodGroup    String? // A+, A-, B+, B-, AB+, AB-, O+, O-
+  allergies     String? // free text / comma-separated (safety-critical)
+
+  emergencyContactName  String?
+  emergencyContactPhone String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdById String?
+  createdBy   User?   @relation("PatientCreatedBy", fields: [createdById], references: [id])
+
+  visits Visit[]
+  sales  Sale[]
+
+  @@index([lastName, firstName])
+}
+
+// ---------------------------------------------------------------------------
+//  Visits — one row each time a patient comes to the hospital.
+//  Drives the queue/workflow: reception -> doctor -> pharmacy -> done.
+// ---------------------------------------------------------------------------
+model Visit {
+  id             String   @id @default(cuid())
+  visitNumber    String   @unique // e.g. "V-000123"
+  patientId      String
+  patient        Patient  @relation(fields: [patientId], references: [id])
+  status         String   @default("WAITING") // WAITING | WITH_DOCTOR | PHARMACY | COMPLETED | CANCELLED
+  chiefComplaint String? // why they came in (reception intake)
+  createdById    String?
+  createdBy      User?    @relation("VisitCreatedBy", fields: [createdById], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  consultation Consultation? // filled in by the doctor
+
+  @@index([status])
+  @@index([patientId])
+}
+
+// ---------------------------------------------------------------------------
+//  Consultation — the doctor's record for a single visit (1:1 with Visit).
+// ---------------------------------------------------------------------------
+model Consultation {
+  id       String @id @default(cuid())
+  visitId  String @unique
+  visit    Visit  @relation(fields: [visitId], references: [id])
+  doctorId String
+  doctor   User   @relation(fields: [doctorId], references: [id])
+
+  // Vitals
+  temperature Float? // °C
+  systolic    Int? // mmHg (BP top number)
+  diastolic   Int? // mmHg (BP bottom number)
+  pulse       Int? // bpm
+  weightKg    Float?
+  heightCm    Float?
+
+  // Clinical record
+  symptoms  String?
+  diagnosis String?
+  notes     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  prescription Prescription? // optional — not every consult needs drugs
+}
+
+// ---------------------------------------------------------------------------
+//  Prescription — what the doctor prescribes; the pharmacist fulfils it.
+// ---------------------------------------------------------------------------
+model Prescription {
+  id             String   @id @default(cuid())
+  consultationId String   @unique
+  consultation   Consultation @relation(fields: [consultationId], references: [id])
+  notes          String?
+  status         String   @default("PENDING") // PENDING | PARTIALLY_DISPENSED | DISPENSED | CANCELLED
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  items PrescriptionItem[]
+  sales Sale[] // dispensing may happen in one or more sales (partial fills)
+}
+
+model PrescriptionItem {
+  id                String  @id @default(cuid())
+  prescriptionId    String
+  prescription      Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  drugId            String
+  drug              Drug    @relation(fields: [drugId], references: [id])
+  dosage            String // e.g. "500mg"
+  frequency         String // e.g. "3x daily"
+  durationDays      Int?
+  quantity          Int // total units prescribed
+  quantityDispensed Int     @default(0) // how many have been handed out so far
+  instructions      String? // "after meals", etc.
+}
+
+// ---------------------------------------------------------------------------
+//  Pharmacy: drug catalogue + auditable stock ledger
+// ---------------------------------------------------------------------------
+model Drug {
+  id              String    @id @default(cuid())
+  sku             String    @unique // internal code
+  name            String // brand/trade name
+  genericName     String?
+  category        String? // Antibiotic, Analgesic, Antimalarial, ...
+  form            String // TABLET | CAPSULE | SYRUP | INJECTION | CREAM | DROPS | OTHER
+  strength        String? // "500mg", "125mg/5ml"
+  unitPrice       Int // FCFA per unit (integer — no cents in CFA)
+  quantityInStock Int       @default(0) // denormalised current level (source of truth = ledger)
+  reorderLevel    Int       @default(10) // low-stock alert threshold
+  expiryDate      DateTime?
+  batchNumber     String?
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  prescriptionItems PrescriptionItem[]
+  saleItems         SaleItem[]
+  stockMovements    StockMovement[]
+
+  @@index([name])
+}
+
+// Every single change to stock is recorded here — purchases in, dispenses out,
+// manual adjustments. This is the audit trail; quantityInStock is derived from it.
+model StockMovement {
+  id           String   @id @default(cuid())
+  drugId       String
+  drug         Drug     @relation(fields: [drugId], references: [id])
+  type         String // PURCHASE | DISPENSE | ADJUSTMENT | RETURN
+  quantity     Int // signed: +in / -out
+  balanceAfter Int // stock level immediately after this movement
+  reason       String?
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([drugId])
+}
+
+// ---------------------------------------------------------------------------
+//  Sales — the pharmacy point-of-sale record (a receipt).
+// ---------------------------------------------------------------------------
+model Sale {
+  id             String   @id @default(cuid())
+  saleNumber     String   @unique // receipt no, e.g. "RCP-000123"
+  patientId      String?
+  patient        Patient? @relation(fields: [patientId], references: [id])
+  prescriptionId String? // set when the sale fulfils a prescription
+  prescription   Prescription? @relation(fields: [prescriptionId], references: [id])
+  pharmacistId   String
+  pharmacist     User     @relation(fields: [pharmacistId], references: [id])
+  totalAmount    Int // FCFA
+  amountPaid     Int
+  paymentMethod  String // CASH | MOBILE_MONEY | CARD | INSURANCE
+  createdAt      DateTime @default(now())
+
+  items SaleItem[]
+
+  @@index([createdAt])
+}
+
+model SaleItem {
+  id        String @id @default(cuid())
+  saleId    String
+  sale      Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  drugId    String
+  drug      Drug   @relation(fields: [drugId], references: [id])
+  quantity  Int
+  unitPrice Int // captured at time of sale (price history safety)
+  subtotal  Int
+}
