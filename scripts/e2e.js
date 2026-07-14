@@ -87,7 +87,7 @@ async function pickSelect(page, placeholder, optionRegex) {
     await page.goto(`${BASE}/pharmacy/dispense`);
     await shot(page, "03-pharmacy-dispense-queue");
     const prow = page.getByRole("row", { name: new RegExp(LAST) });
-    await prow.getByRole("link", { name: /Dispense/ }).click();
+    await prow.getByRole("button", { name: /Dispense/ }).click();
     await page.waitForURL(/\/pharmacy\/dispense\/[a-z0-9]+$/, { timeout: 15000 });
     await page.getByRole("button", { name: /Confirm/ }).click();
     await page.waitForURL(/\/pharmacy\/sales\/[a-z0-9]+$/, { timeout: 15000 });

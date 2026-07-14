@@ -37,6 +37,7 @@ export function SelectField({
     <>
       <input type="hidden" name={name} value={value} />
       <Select
+        items={options}
         value={value || undefined}
         onValueChange={(v) => {
           setValue(v as string);

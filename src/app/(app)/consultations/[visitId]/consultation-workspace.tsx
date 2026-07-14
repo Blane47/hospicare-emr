@@ -94,6 +94,11 @@ export function ConsultationWorkspace({
   );
 
   const drugById = (id: string) => drugs.find((d) => d.id === id);
+  // Value→label map so the Select shows the drug name, not its id.
+  const drugItems = drugs.map((d) => ({
+    value: d.id,
+    label: `${d.name}${d.strength ? " " + d.strength : ""}`,
+  }));
 
   const updateItem = (key: string, patch: Partial<Item>) =>
     setItems((prev) => prev.map((it) => (it.key === key ? { ...it, ...patch } : it)));
@@ -319,6 +324,7 @@ export function ConsultationWorkspace({
                       <tr key={it.key} className="border-b last:border-0">
                         <td className="py-2 pr-2 align-top">
                           <Select
+                            items={drugItems}
                             value={it.drugId || undefined}
                             onValueChange={(v) => {
                               const dg = drugById(v as string);

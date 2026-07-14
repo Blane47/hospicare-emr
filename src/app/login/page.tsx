@@ -6,7 +6,20 @@ export default function LoginPage() {
     <div className="grid min-h-screen lg:grid-cols-2">
       {/* Brand / value panel (hidden on small screens) */}
       <div className="bg-sidebar text-sidebar-foreground relative hidden flex-col justify-between overflow-hidden p-12 lg:flex">
-        <div className="flex items-center gap-2 text-lg font-semibold">
+        {/* Optional background photo — drop an image at public/login-bg.jpg.
+            If the file is absent, this layer is simply invisible and the
+            solid sidebar colour + gradient below act as the fallback. */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/login-bg.jpg')" }}
+        />
+        {/* Dark teal overlay so the heading + text stay readable over any photo. */}
+        <div
+          aria-hidden
+          className="from-sidebar/95 via-sidebar/85 to-sidebar/95 absolute inset-0 bg-gradient-to-br"
+        />
+        <div className="relative z-10 flex items-center gap-2 text-lg font-semibold">
           <div className="bg-primary text-primary-foreground flex h-9 w-9 items-center justify-center rounded-lg">
             <Activity className="h-5 w-5" />
           </div>

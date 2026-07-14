@@ -44,6 +44,10 @@ export function PosTerminal({ drugs }: { drugs: DrugOption[] }) {
   const [lines, setLines] = useState<Line[]>([newLine()]);
 
   const drugById = (id: string) => drugs.find((d) => d.id === id);
+  const drugItems = drugs.map((d) => ({
+    value: d.id,
+    label: `${d.name}${d.strength ? " " + d.strength : ""}`,
+  }));
   const update = (key: string, patch: Partial<Line>) =>
     setLines((prev) => prev.map((l) => (l.key === key ? { ...l, ...patch } : l)));
   const remove = (key: string) =>
@@ -105,6 +109,7 @@ export function PosTerminal({ drugs }: { drugs: DrugOption[] }) {
               <div key={l.key} className="flex items-start gap-3">
                 <div className="flex-1">
                   <Select
+                    items={drugItems}
                     value={l.drugId || undefined}
                     onValueChange={(v) => update(l.key, { drugId: v as string })}
                   >

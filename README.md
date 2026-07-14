@@ -10,6 +10,25 @@ connected.
 
 ---
 
+## Screenshots
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/05-admin-dashboard.png" alt="Admin dashboard"><br><b>Admin dashboard</b> — role-aware KPIs, revenue &amp; visit charts, payment mix, low-stock</td>
+<td width="50%"><img src="docs/screenshots/02-doctor-consultation.png" alt="Doctor consultation"><br><b>Doctor consultation</b> — vitals, diagnosis and live prescription builder</td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/03-pharmacy-dispense-queue.png" alt="Dispensing queue"><br><b>Pharmacy dispensing</b> — prescriptions waiting to be filled</td>
+<td width="50%"><img src="docs/screenshots/04-pharmacy-receipt.png" alt="Pharmacy receipt"><br><b>Printable receipt</b> — generated after dispensing, in FCFA</td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/01-reception-queue.png" alt="Patient queue"><br><b>Patient queue</b> — live board of who is waiting, with the doctor, or at pharmacy</td>
+<td width="50%"><img src="docs/screenshots/00-login.png" alt="Login"><br><b>Login</b> — role-based access for every member of staff</td>
+</tr>
+</table>
+
+---
+
 ## Features
 
 The system has four staff roles, each with its own view and permissions.
