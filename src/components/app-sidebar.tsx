@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Activity, LogOut } from "lucide-react";
 import { navForRole } from "@/lib/nav";
-import { ROLE_LABELS, type Role } from "@/lib/constants";
+import { type Role } from "@/lib/constants";
+import { useT } from "@/components/locale-provider";
 import { signOutAction } from "@/lib/actions/auth-actions";
 import {
   Sidebar,
@@ -25,6 +26,7 @@ export function AppSidebar({
   user: { name: string; email: string; role: Role };
 }) {
   const pathname = usePathname();
+  const { t } = useT();
   const groups = navForRole(user.role);
 
   const isActive = (href: string) =>
@@ -58,7 +60,7 @@ export function AppSidebar({
       <SidebarContent>
         {groups.map((group) => (
           <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupLabel>{t(`nav.${group.label}`)}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => {
@@ -70,7 +72,7 @@ export function AppSidebar({
                         render={
                           <Link href={item.href}>
                             <Icon />
-                            <span>{item.label}</span>
+                            <span>{t(`nav.${item.label}`)}</span>
                           </Link>
                         }
                       />
@@ -91,13 +93,13 @@ export function AppSidebar({
           <div className="min-w-0 flex-1 leading-tight">
             <div className="truncate text-sm font-medium">{user.name}</div>
             <div className="text-sidebar-foreground/60 truncate text-xs">
-              {ROLE_LABELS[user.role]}
+              {t(`role.${user.role}`)}
             </div>
           </div>
           <form action={signOutAction}>
             <button
               type="submit"
-              title="Sign out"
+              title={t("common.signOut")}
               className="text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent rounded-md p-1.5 transition-colors"
             >
               <LogOut className="h-4 w-4" />

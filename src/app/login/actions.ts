@@ -19,7 +19,8 @@ export async function authenticate(
     // Auth.js signals a successful sign-in by throwing a redirect, which we
     // must let bubble up. Only genuine auth errors are handled here.
     if (error instanceof AuthError) {
-      return { error: "Invalid email or password. Please try again." };
+      // Returns a translation key; the form resolves it with t().
+      return { error: "login.invalid" };
     }
     throw error;
   }

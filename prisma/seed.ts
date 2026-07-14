@@ -26,6 +26,11 @@ async function main() {
   console.log("🌱 Seeding database...");
 
   // --- Wipe existing data (dev only), in FK-safe order --------------------
+  // Children that reference visits/consultations/patients must go first.
+  await prisma.appointment.deleteMany();
+  await prisma.labOrderItem.deleteMany();
+  await prisma.labOrder.deleteMany();
+  await prisma.labTest.deleteMany();
   await prisma.saleItem.deleteMany();
   await prisma.sale.deleteMany();
   await prisma.stockMovement.deleteMany();

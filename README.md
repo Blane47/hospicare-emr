@@ -25,6 +25,10 @@ connected.
 <td width="50%"><img src="docs/screenshots/01-reception-queue.png" alt="Patient queue"><br><b>Patient queue</b> — live board of who is waiting, with the doctor, or at pharmacy</td>
 <td width="50%"><img src="docs/screenshots/00-login.png" alt="Login"><br><b>Login</b> — role-based access for every member of staff</td>
 </tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/07-dashboard-fr.png" alt="Tableau de bord"><br><b>Bilingual</b> — the same dashboard in French (full FR / EN toggle)</td>
+<td width="50%"><img src="docs/screenshots/06-login-fr.png" alt="Connexion"><br><b>French login</b> — Cameroon is officially bilingual</td>
+</tr>
 </table>
 
 ---
@@ -35,21 +39,25 @@ The system has four staff roles, each with its own view and permissions.
 
 | Role | Can do |
 | --- | --- |
-| **Receptionist** | Register patients, start visits (add to the doctor queue) |
-| **Doctor** | Attend to waiting patients, record vitals & diagnosis, write prescriptions |
+| **Receptionist** | Register patients, book appointments, start visits (add to the doctor queue) |
+| **Doctor** | Attend to waiting patients, record vitals & diagnosis, write prescriptions, order lab tests |
 | **Pharmacist** | Dispense prescriptions, manage drug inventory, sell over the counter, print receipts |
+| **Lab Technician** | Process ordered lab tests and enter results |
 | **Administrator** | Everything above + staff management + full analytics |
 
 **Core capabilities**
 - 🔐 Secure authentication with **role-based access control** (enforced server-side)
-- 👤 **Patient records** — register, search, full profile with visit history and allergy alerts
-- 🩺 **Consultations** — vitals, diagnosis, clinical notes, and a live prescription builder
+- 👤 **Patient records** — register, search, full profile with visit history, allergy alerts and **vitals trends**
+- 📅 **Appointments** — book future visits and check patients in to the queue
+- 🩺 **Consultations** — vitals, diagnosis, a live **prescription builder**, **lab test ordering**, and **printable prescriptions**
+- 🔬 **Laboratory** — doctors order tests, the lab enters results, results shown on the consultation
 - 💊 **Pharmacy** — dispense against prescriptions with **automatic stock deduction**,
-  a full **auditable stock ledger**, **low-stock alerts**, walk-in point of sale,
+  a full **auditable stock ledger**, **low-stock & expiry alerts**, walk-in point of sale,
   and **printable receipts**
 - 📊 **Dashboard** — role-aware KPIs and charts (revenue, visits, payment mix, low stock)
+- 🌍 **Bilingual** — full **French / English** interface (Cameroon is officially bilingual)
 - 🇨🇲 **Cameroon context** — amounts in **FCFA** (integer money, no rounding bugs),
-  Mobile Money / Orange Money payment options, Cameroonian regions
+  **Cash / MTN Mobile Money / Orange Money** payments, Cameroonian regions
 
 ---
 

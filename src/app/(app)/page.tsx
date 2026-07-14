@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
+import { getT } from "@/lib/i18n-server";
 import {
   formatFCFA,
   PAYMENT_METHODS,
@@ -48,6 +49,7 @@ function buildDays(n: number) {
 
 export default async function DashboardPage() {
   const user = await requireUser();
+  const { t } = await getT();
   const role = user.role as Role;
   const today = startOfToday();
   const since = new Date(today);
@@ -150,9 +152,9 @@ export default async function DashboardPage() {
 
   const greeting = (() => {
     const h = new Date().getHours();
-    if (h < 12) return "Good morning";
-    if (h < 17) return "Good afternoon";
-    return "Good evening";
+    if (h < 12) return t("dash.morning");
+    if (h < 17) return t("dash.afternoon");
+    return t("dash.evening");
   })();
 
   return (
@@ -161,9 +163,7 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-semibold tracking-tight">
           {greeting}, {user.name?.split(" ")[0]}
         </h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Here&apos;s what&apos;s happening at the hospital today.
-        </p>
+        <p className="text-muted-foreground mt-1 text-sm">{t("dash.subtitle")}</p>
       </div>
 
       {/* KPI row — tailored to role */}
@@ -171,7 +171,7 @@ export default async function DashboardPage() {
         {(isAdmin || isRecep) && (
           <StatTile
             icon={Users}
-            label="Total patients"
+            label={t("dash.totalPatients")}
             value={patientCount}
             tint="bg-primary/10 text-primary"
           />
@@ -179,7 +179,7 @@ export default async function DashboardPage() {
         {(isAdmin || isRecep || isDoctor) && (
           <StatTile
             icon={CalendarCheck}
-            label="Visits today"
+            label={t("dash.visitsToday")}
             value={visitsToday}
             tint="bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
           />
@@ -187,7 +187,7 @@ export default async function DashboardPage() {
         {(isDoctor || isRecep) && (
           <StatTile
             icon={Clock}
-            label="Waiting for doctor"
+            label={t("dash.waiting")}
             value={waiting}
             tint="bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
           />
@@ -195,7 +195,7 @@ export default async function DashboardPage() {
         {isDoctor && (
           <StatTile
             icon={CheckCircle2}
-            label="Completed today"
+            label={t("dash.completedToday")}
             value={completedToday}
             tint="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
           />
@@ -203,7 +203,7 @@ export default async function DashboardPage() {
         {isRecep && (
           <StatTile
             icon={Stethoscope}
-            label="With doctor"
+            label={t("dash.withDoctor")}
             value={withDoctor}
             tint="bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
           />
@@ -211,7 +211,7 @@ export default async function DashboardPage() {
         {(isAdmin || isPharm) && (
           <StatTile
             icon={Wallet}
-            label="Revenue today"
+            label={t("dash.revenueToday")}
             value={formatFCFA(revenueToday)}
             tint="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
           />
@@ -219,7 +219,7 @@ export default async function DashboardPage() {
         {isPharm && (
           <StatTile
             icon={Pill}
-            label="Pending prescriptions"
+            label={t("dash.pendingRx")}
             value={pendingRx}
             tint="bg-primary/10 text-primary"
           />
@@ -227,7 +227,7 @@ export default async function DashboardPage() {
         {isPharm && (
           <StatTile
             icon={Package}
-            label="Items dispensed today"
+            label={t("dash.itemsDispensed")}
             value={itemsDispensedToday}
             tint="bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
           />
@@ -235,7 +235,7 @@ export default async function DashboardPage() {
         {isAdmin && (
           <StatTile
             icon={Pill}
-            label="Pending prescriptions"
+            label={t("dash.pendingRx")}
             value={pendingRx}
             tint="bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
           />
@@ -243,7 +243,7 @@ export default async function DashboardPage() {
         {(isAdmin || isPharm) && (
           <StatTile
             icon={TriangleAlert}
-            label="Low-stock drugs"
+            label={t("dash.lowStock")}
             value={lowStock.length}
             tint="bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
           />
@@ -251,7 +251,7 @@ export default async function DashboardPage() {
         {isLab && (
           <StatTile
             icon={FlaskConical}
-            label="Lab orders pending"
+            label={t("dash.labPending")}
             value={pendingLabs}
             tint="bg-primary/10 text-primary"
           />
@@ -259,7 +259,7 @@ export default async function DashboardPage() {
         {isLab && (
           <StatTile
             icon={CheckCircle2}
-            label="Results entered today"
+            label={t("dash.resultsToday")}
             value={labsDoneToday}
             tint="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
           />
@@ -271,9 +271,9 @@ export default async function DashboardPage() {
         {(isAdmin || isPharm) && (
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle className="text-base">Revenue · last 14 days</CardTitle>
+              <CardTitle className="text-base">{t("dash.revenue14")}</CardTitle>
               <p className="text-muted-foreground text-sm">
-                Total {formatFCFA(weekRevenue)}
+                {t("dash.total")} {formatFCFA(weekRevenue)}
               </p>
             </CardHeader>
             <CardContent>
@@ -285,7 +285,7 @@ export default async function DashboardPage() {
         {(isAdmin || isDoctor || isRecep) && (
           <Card className={isAdmin ? "lg:col-span-2" : "lg:col-span-3"}>
             <CardHeader>
-              <CardTitle className="text-base">Visits · last 14 days</CardTitle>
+              <CardTitle className="text-base">{t("dash.visits14")}</CardTitle>
             </CardHeader>
             <CardContent>
               <VisitsChart data={visitsData} />
@@ -296,7 +296,7 @@ export default async function DashboardPage() {
         {(isAdmin || isPharm) && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Payment methods</CardTitle>
+              <CardTitle className="text-base">{t("dash.paymentMethods")}</CardTitle>
             </CardHeader>
             <CardContent>
               <PaymentChart data={paymentData} />
@@ -307,19 +307,19 @@ export default async function DashboardPage() {
         {(isAdmin || isPharm) && (
           <Card className="lg:col-span-1">
             <CardHeader className="flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base">Low stock</CardTitle>
+              <CardTitle className="text-base">{t("dash.lowStockTitle")}</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
                 render={<Link href="/pharmacy/inventory" />}
               >
-                View <ArrowRight className="h-4 w-4" />
+                {t("dash.view")} <ArrowRight className="h-4 w-4" />
               </Button>
             </CardHeader>
             <CardContent>
               {lowStock.length === 0 ? (
                 <p className="text-muted-foreground py-6 text-center text-sm">
-                  All drugs are above reorder level.
+                  {t("dash.allAboveReorder")}
                 </p>
               ) : (
                 <ul className="space-y-2">
@@ -343,7 +343,7 @@ export default async function DashboardPage() {
                   <span className="font-medium text-red-600 dark:text-red-400">
                     {expiringSoon}
                   </span>{" "}
-                  drug(s) expired or expiring soon
+                  {t("dash.expiringNote")}
                 </p>
               )}
             </CardContent>
@@ -353,9 +353,9 @@ export default async function DashboardPage() {
         {(isDoctor || isRecep) && (
           <Card className="lg:col-span-3">
             <CardHeader className="flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base">Queue snapshot</CardTitle>
+              <CardTitle className="text-base">{t("dash.queueSnapshot")}</CardTitle>
               <Button variant="ghost" size="sm" render={<Link href="/queue" />}>
-                Open queue <ArrowRight className="h-4 w-4" />
+                {t("dash.openQueue")} <ArrowRight className="h-4 w-4" />
               </Button>
             </CardHeader>
             <CardContent className="grid grid-cols-3 gap-4 text-center">
@@ -369,7 +369,9 @@ export default async function DashboardPage() {
               </div>
               <div>
                 <div className="text-2xl font-semibold">{atPharmacy}</div>
-                <div className="text-muted-foreground text-xs">At pharmacy</div>
+                <div className="text-muted-foreground text-xs">
+                  {t("dash.atPharmacy")}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -378,19 +380,19 @@ export default async function DashboardPage() {
         {isLab && (
           <Card className="lg:col-span-3">
             <CardHeader className="flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base">Laboratory worklist</CardTitle>
+              <CardTitle className="text-base">{t("dash.labWorklist")}</CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
                 render={<Link href="/laboratory" />}
               >
-                Open laboratory <ArrowRight className="h-4 w-4" />
+                {t("dash.openLab")} <ArrowRight className="h-4 w-4" />
               </Button>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-sm">
                 <span className="text-foreground font-medium">{pendingLabs}</span>{" "}
-                lab order(s) awaiting results.
+                {t("dash.labAwaiting")}
               </p>
             </CardContent>
           </Card>

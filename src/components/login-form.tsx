@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { Loader2, LogIn, AlertCircle } from "lucide-react";
 import { authenticate, type LoginState } from "@/app/login/actions";
+import { useT } from "@/components/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,7 @@ const DEMO_ACCOUNTS = [
 ];
 
 export function LoginForm() {
+  const { t } = useT();
   const [state, formAction, isPending] = useActionState<LoginState, FormData>(
     authenticate,
     undefined,
@@ -27,9 +29,11 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {t("login.welcomeBack")}
+        </h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Sign in to access the hospital management system.
+          {t("login.subtitle")}
         </p>
       </div>
 
@@ -37,12 +41,12 @@ export function LoginForm() {
         {state?.error && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{state.error}</AlertDescription>
+            <AlertDescription>{t(state.error)}</AlertDescription>
           </Alert>
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("login.email")}</Label>
           <Input
             id="email"
             name="email"
@@ -56,7 +60,7 @@ export function LoginForm() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t("login.password")}</Label>
           <Input
             id="password"
             name="password"
@@ -72,11 +76,11 @@ export function LoginForm() {
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" /> Signing in…
+              <Loader2 className="h-4 w-4 animate-spin" /> {t("login.signingIn")}
             </>
           ) : (
             <>
-              <LogIn className="h-4 w-4" /> Sign in
+              <LogIn className="h-4 w-4" /> {t("common.signIn")}
             </>
           )}
         </Button>
@@ -85,7 +89,7 @@ export function LoginForm() {
       {/* Demo helper — one-click fill for the panel demonstration. */}
       <div className="mt-8">
         <p className="text-muted-foreground mb-3 text-xs font-medium uppercase tracking-wide">
-          Demo accounts (password: password123)
+          {t("login.demoAccounts")}
         </p>
         <div className="grid grid-cols-2 gap-2">
           {DEMO_ACCOUNTS.map((acc) => (
