@@ -39,6 +39,7 @@ const en: Dict = {
   "nav.Inventory": "Inventory",
   "nav.Sales": "Sales",
   "nav.Staff": "Staff",
+  "nav.Survey responses": "Survey responses",
 
   "role.ADMIN": "Administrator",
   "role.DOCTOR": "Doctor",
@@ -135,6 +136,7 @@ const fr: Dict = {
   "nav.Inventory": "Inventaire",
   "nav.Sales": "Ventes",
   "nav.Staff": "Personnel",
+  "nav.Survey responses": "Réponses au sondage",
 
   "role.ADMIN": "Administrateur",
   "role.DOCTOR": "Médecin",

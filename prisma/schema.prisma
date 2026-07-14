@@ -310,3 +310,18 @@ model LabOrderItem {
   flag       String? // NORMAL | HIGH | LOW | ABNORMAL
   resultedAt DateTime?
 }
+
+// ---------------------------------------------------------------------------
+//  Survey responses — a public requirements-gathering form filled in by
+//  hospital staff to map the real workflow. Answers stored as a JSON string.
+// ---------------------------------------------------------------------------
+model SurveyResponse {
+  id             String   @id @default(cuid())
+  respondentName String?
+  respondentRole String // which staff role answered (nurse, doctor, …)
+  hospital       String?
+  answers        String // JSON: { questionId: answer, ... } + clinical rule rows
+  createdAt      DateTime @default(now())
+
+  @@index([respondentRole])
+}

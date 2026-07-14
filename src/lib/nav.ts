@@ -10,6 +10,7 @@ import {
   UserCog,
   CalendarDays,
   FlaskConical,
+  ClipboardList,
   type LucideIcon,
 } from "lucide-react";
 import type { Role } from "@/lib/constants";
@@ -111,6 +112,12 @@ export const NAV_GROUPS: NavGroup[] = [
         label: "Staff",
         href: "/admin/users",
         icon: UserCog,
+        roles: ["ADMIN"],
+      },
+      {
+        label: "Survey responses",
+        href: "/admin/survey",
+        icon: ClipboardList,
         roles: ["ADMIN"],
       },
     ],

@@ -29,8 +29,12 @@ export const authConfig = {
     // the user is authenticated.
     authorized({ auth, request }) {
       const isLoggedIn = !!auth?.user;
-      const isOnLogin = request.nextUrl.pathname.startsWith("/login");
-      if (isOnLogin) {
+      const path = request.nextUrl.pathname;
+
+      // The workflow survey is a public form — anyone with the link can fill it.
+      if (path.startsWith("/survey")) return true;
+
+      if (path.startsWith("/login")) {
         // Already logged in? Bounce away from the login page to the dashboard.
         if (isLoggedIn) {
           return Response.redirect(new URL("/", request.nextUrl));

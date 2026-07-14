@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>HospiCare — Workflow Interview Guide</title>
+<style>
+  :root { --teal:#0f766e; --ink:#1f2937; --muted:#6b7280; --line:#d1d5db; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    color: var(--ink); font-size: 11.5px; line-height: 1.5; margin: 0;
+  }
+  .cover {
+    background: var(--teal); color: #fff; padding: 40px 44px; margin-bottom: 26px;
+    border-radius: 0 0 10px 10px;
+  }
+  .cover h1 { margin: 0 0 6px; font-size: 26px; }
+  .cover p { margin: 2px 0; opacity: .92; font-size: 12.5px; }
+  .badge { display:inline-block; background: rgba(255,255,255,.18); padding: 3px 10px; border-radius: 20px; font-size: 11px; margin-top: 10px; }
+  main { padding: 0 44px 40px; }
+  .intro {
+    background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 8px;
+    padding: 14px 18px; margin-bottom: 24px;
+  }
+  .intro strong { color: var(--teal); }
+  h2 {
+    color: var(--teal); font-size: 15px; margin: 26px 0 4px;
+    padding-bottom: 6px; border-bottom: 2px solid var(--teal);
+    page-break-after: avoid;
+  }
+  h2 .who { color: var(--muted); font-weight: 400; font-size: 11.5px; }
+  h3 { font-size: 12px; margin: 14px 0 4px; color:#111827; page-break-after: avoid; }
+  ol.q { margin: 6px 0 10px; padding-left: 22px; }
+  ol.q li { margin-bottom: 7px; page-break-inside: avoid; }
+  .hint { color: var(--muted); font-style: italic; }
+  .notes { margin: 4px 0 14px; }
+  .notes .line { border-bottom: 1px dotted var(--line); height: 17px; }
+  .section { page-break-inside: avoid; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 11px; }
+  th, td { border: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
+  th { background: #f0fdfa; color: var(--teal); }
+  td.fill { height: 30px; }
+  .page-break { page-break-before: always; }
+  footer { color: var(--muted); font-size: 10px; text-align: center; margin-top: 8px; }
+</style>
+</head>
+<body>
+  <div class="cover">
+    <h1>Hospital Workflow — Interview Guide</h1>
+    <p>HospiCare · Hospital Management System (EMR &amp; Pharmacy)</p>
+    <p>Prepared to map the real patient-care process before finalising the system.</p>
+    <span class="badge">Internship Project</span>
+  </div>
+
+  <main>
+    <div class="intro">
+      <strong>How to use this guide.</strong> Take it to each member of staff and ask the
+      questions in their section. Write answers on the dotted lines (or a notebook).
+      The goal is to learn <strong>who does what</strong>, <strong>in what order</strong>,
+      and the <strong>clinical rules</strong> (which tests follow which symptoms, and which
+      drugs treat which diagnoses). The last two pages have tables to capture those rules —
+      they will power the system's test/treatment suggestions.
+    </div>
+
+    <!-- 1. RECEPTION -->
+    <div class="section">
+      <h2>1. Receptionist / Records Officer <span class="who">— first point of contact</span></h2>
+      <ol class="q">
+        <li>What details do you record for a <strong>new patient</strong>? (name, date of birth, sex, phone, address, next of kin, blood group, known allergies?)</li>
+        <li>How do you find a <strong>returning patient's</strong> file? Is there a patient card or number?</li>
+        <li>Do you record the <strong>reason for the visit</strong>, or does the nurse/doctor do that?</li>
+        <li>Is any <strong>payment</strong> collected at registration (e.g. a consultation fee)? How much, and how is it recorded?</li>
+        <li>After registration, <strong>where does the patient go next</strong> — to a nurse, straight to the doctor, or to a waiting area?</li>
+        <li>How are <strong>appointments</strong> handled today (walk-in only, appointment book, phone)?</li>
+      </ol>
+      <div class="notes"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+    </div>
+
+    <!-- 2. NURSE -->
+    <div class="section">
+      <h2>2. Nurse <span class="who">— triage &amp; vital signs (key interview)</span></h2>
+      <ol class="q">
+        <li>After registration, does the patient <strong>see you before the doctor</strong>?</li>
+        <li>Which <strong>vital signs</strong> do you measure? (temperature, blood pressure, pulse, weight, height, respiratory rate, oxygen saturation?)</li>
+        <li>Do you record the patient's <strong>symptoms / complaint</strong>, and in how much detail?</li>
+        <li>Do you decide how <strong>urgent</strong> a patient is (triage)? What categories do you use?</li>
+        <li>Can you <strong>order any tests</strong> yourself, or only the doctor?</li>
+        <li>Do you give any <strong>treatment</strong> before the doctor (injections, first aid, first dose)?</li>
+        <li>Are there <strong>danger signs</strong> that mean a patient must be seen immediately?</li>
+      </ol>
+      <h3>Common complaint → tests usually done (the nurse often knows these best)</h3>
+      <p class="hint">For each complaint, ask: "which lab tests are almost always ordered?"</p>
+      <ol class="q">
+        <li>Fever / hot body → …</li>
+        <li>Headache → …</li>
+        <li>Cough / difficulty breathing → …</li>
+        <li>Diarrhoea &amp; vomiting → …</li>
+        <li>Abdominal / stomach pain → …</li>
+        <li>Fatigue / weakness / pallor → …</li>
+        <li>Pregnancy-related visit → …</li>
+      </ol>
+      <div class="notes"><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div></div>
+    </div>
+
+    <!-- 3. DOCTOR -->
+    <div class="section">
+      <h2>3. Doctor <span class="who">— consultation &amp; clinical decisions</span></h2>
+      <ol class="q">
+        <li>What do you <strong>review first</strong> when the patient comes in (vitals, history, previous visits)?</li>
+        <li>How do you decide <strong>which lab tests to order</strong>? Are there standard "symptom → test" rules you follow?</li>
+        <li>After results come back, does the patient <strong>return to you</strong>, and how do you receive the results?</li>
+        <li>How do you reach a <strong>diagnosis</strong> and choose <strong>drugs</strong>?</li>
+        <li>For the <strong>most common diagnoses</strong>, what are the first-line drugs and typical dosing? (see table on last page)</li>
+        <li>When do you write a <strong>referral</strong> to another facility?</li>
+        <li>Would a system that <strong>suggests tests/drugs</strong> from the patient's symptoms help you? What would make you trust it (or not)?</li>
+      </ol>
+      <div class="notes"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+    </div>
+
+    <!-- 4. LAB -->
+    <div class="section">
+      <h2>4. Laboratory Technician <span class="who">— tests &amp; results</span></h2>
+      <ol class="q">
+        <li>Which tests do you perform <strong>in-house</strong>, and which are <strong>sent out</strong>?</li>
+        <li>How do you receive a <strong>test request</strong> (paper form, verbal, patient brings a slip)? What is written on it?</li>
+        <li>How are <strong>results recorded</strong> and returned to the doctor?</li>
+        <li>What is the typical <strong>turnaround time</strong> for common tests?</li>
+        <li>How do you know a result is <strong>abnormal</strong> (reference ranges)? Do you flag it?</li>
+        <li>What are the <strong>prices</strong> of the common tests? (see table)</li>
+      </ol>
+      <div class="notes"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+    </div>
+
+    <!-- 5. PHARMACIST -->
+    <div class="section">
+      <h2>5. Pharmacist <span class="who">— dispensing &amp; stock</span></h2>
+      <ol class="q">
+        <li>How do you <strong>receive a prescription</strong> (paper, patient brings it, electronic)?</li>
+        <li>Do you dispense <strong>exactly as prescribed</strong>, or can you substitute a generic/alternative?</li>
+        <li>How is <strong>drug stock</strong> tracked now? When and how do you <strong>reorder</strong>?</li>
+        <li>How do you handle <strong>expiry</strong> — how are near-expiry or expired drugs managed?</li>
+        <li>Is payment made <strong>at the pharmacy</strong> or at a separate cashier?</li>
+        <li>Do you sell to <strong>walk-in customers</strong> without a prescription (over-the-counter)?</li>
+        <li>Which drugs are <strong>always in demand</strong>?</li>
+      </ol>
+      <div class="notes"><div class="line"></div><div class="line"></div><div class="line"></div></div>
+    </div>
+
+    <!-- 6. CASHIER -->
+    <div class="section">
+      <h2>6. Cashier / Billing <span class="who">— if this is a separate person</span></h2>
+      <ol class="q">
+        <li>What is <strong>charged</strong>, and at which points (registration, consultation, lab, drugs)?</li>
+        <li>Which <strong>payment methods</strong> do you accept? (cash, MTN Mobile Money, Orange Money, other?)</li>
+        <li>Is there any <strong>insurance</strong>, exemption, or credit arrangement?</li>
+        <li>How is a <strong>receipt</strong> issued and recorded?</li>
+      </ol>
+      <div class="notes"><div class="line"></div><div class="line"></div></div>
+    </div>
+
+    <!-- 7. ADMIN -->
+    <div class="section">
+      <h2>7. Administrator / Management <span class="who">— oversight</span></h2>
+      <ol class="q">
+        <li>What <strong>reports</strong> do you need (daily revenue, patient numbers, stock levels, staff activity)?</li>
+        <li>Who should be able to <strong>see or change what</strong> (roles &amp; permissions)?</li>
+        <li>What are the biggest <strong>pain points</strong> with the current (paper?) system?</li>
+        <li>How is patient <strong>confidentiality</strong> handled?</li>
+      </ol>
+      <div class="notes"><div class="line"></div><div class="line"></div></div>
+    </div>
+
+    <!-- APPENDIX A -->
+    <div class="page-break"></div>
+    <h2>Appendix A — Patient Journey (fill in the order of steps)</h2>
+    <p class="hint">Walk one patient through from arrival to leaving. One row per step.</p>
+    <table>
+      <thead>
+        <tr><th style="width:6%">#</th><th style="width:26%">Step</th><th style="width:22%">Who does it</th><th style="width:28%">What is recorded</th><th style="width:18%">Payment here?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td class="fill"></td><td></td><td></td><td></td></tr>
+        <tr><td>2</td><td class="fill"></td><td></td><td></td><td></td></tr>
+        <tr><td>3</td><td class="fill"></td><td></td><td></td><td></td></tr>
+        <tr><td>4</td><td class="fill"></td><td></td><td></td><td></td></tr>
+        <tr><td>5</td><td class="fill"></td><td></td><td></td><td></td></tr>
+        <tr><td>6</td><td class="fill"></td><td></td><td></td><td></td></tr>
+        <tr><td>7</td><td class="fill"></td><td></td><td></td><td></td></tr>
+        <tr><td>8</td><td class="fill"></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+    <!-- APPENDIX B -->
+    <div class="page-break"></div>
+    <h2>Appendix B — Clinical Rules (this powers the system's suggestions)</h2>
+
+    <h3>Table 1 · Symptom / Complaint → tests usually ordered</h3>
+    <table>
+      <thead><tr><th style="width:40%">Symptom / complaint</th><th>Tests usually ordered</th></tr></thead>
+      <tbody>
+        <tr><td>Fever</td><td class="fill"></td></tr>
+        <tr><td>Headache</td><td></td></tr>
+        <tr><td>Cough / breathing difficulty</td><td></td></tr>
+        <tr><td>Diarrhoea &amp; vomiting</td><td></td></tr>
+        <tr><td>Abdominal pain</td><td></td></tr>
+        <tr><td>Fatigue / weakness</td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Table 2 · Diagnosis → first-line drug(s) &amp; dosage</h3>
+    <table>
+      <thead><tr><th style="width:34%">Diagnosis</th><th>First-line drug(s), dose &amp; duration</th></tr></thead>
+      <tbody>
+        <tr><td>Uncomplicated malaria</td><td class="fill"></td></tr>
+        <tr><td>Severe malaria</td><td></td></tr>
+        <tr><td>Typhoid fever</td><td></td></tr>
+        <tr><td>Respiratory infection</td><td></td></tr>
+        <tr><td>Urinary tract infection</td><td></td></tr>
+        <tr><td>Gastroenteritis</td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Table 3 · Lab test → price, reference range, turnaround</h3>
+    <table>
+      <thead><tr><th style="width:34%">Test</th><th style="width:22%">Price (FCFA)</th><th style="width:24%">Reference / normal</th><th>Turnaround</th></tr></thead>
+      <tbody>
+        <tr><td>Malaria RDT</td><td class="fill"></td><td></td><td></td></tr>
+        <tr><td>Widal test</td><td></td><td></td><td></td></tr>
+        <tr><td>Full blood count</td><td></td><td></td><td></td></tr>
+        <tr><td>Blood glucose</td><td></td><td></td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+        <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+    <footer>HospiCare · Workflow Interview Guide — bring answers back to finalise the system's roles and clinical suggestions.</footer>
+  </main>
+</body>
+</html>
