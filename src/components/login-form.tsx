@@ -13,6 +13,7 @@ const DEMO_ACCOUNTS = [
   { role: "Doctor", email: "doctor@hospital.cm" },
   { role: "Pharmacist", email: "pharmacist@hospital.cm" },
   { role: "Receptionist", email: "reception@hospital.cm" },
+  { role: "Lab Technician", email: "lab@hospital.cm" },
 ];
 
 export function LoginForm() {

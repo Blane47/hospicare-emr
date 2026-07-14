@@ -55,6 +55,9 @@ async function main() {
   const receptionist = await prisma.user.create({
     data: { name: "Yvette Ngo Bell", email: "reception@hospital.cm", passwordHash, role: "RECEPTIONIST" },
   });
+  const labtech = await prisma.user.create({
+    data: { name: "Céline Fomba", email: "lab@hospital.cm", passwordHash, role: "LAB_TECH" },
+  });
   console.log("✔ Users created");
 
   // --- Drugs (+ initial stock via PURCHASE ledger entries) ----------------
@@ -117,6 +120,25 @@ async function main() {
     if (!d) throw new Error(`Drug not found: ${name}`);
     return d;
   };
+
+  // --- Laboratory test catalogue -----------------------------------------
+  const labTestSpecs = [
+    { code: "MAL", name: "Malaria RDT", category: "Parasitology", price: 1500, unit: "", referenceRange: "Negative" },
+    { code: "FBC", name: "Full Blood Count", category: "Haematology", price: 3000, unit: "", referenceRange: "" },
+    { code: "GLU", name: "Fasting Blood Glucose", category: "Biochemistry", price: 1000, unit: "mg/dL", referenceRange: "70–110" },
+    { code: "WID", name: "Widal Test", category: "Serology", price: 2000, unit: "", referenceRange: "Negative" },
+    { code: "HIV", name: "HIV Screening", category: "Serology", price: 2500, unit: "", referenceRange: "Non-reactive" },
+    { code: "URN", name: "Urinalysis", category: "Microscopy", price: 1500, unit: "", referenceRange: "" },
+    { code: "CRE", name: "Creatinine", category: "Biochemistry", price: 2500, unit: "mg/dL", referenceRange: "0.6–1.3" },
+    { code: "HBS", name: "Hepatitis B (HBsAg)", category: "Serology", price: 3000, unit: "", referenceRange: "Negative" },
+    { code: "HB", name: "Haemoglobin", category: "Haematology", price: 1000, unit: "g/dL", referenceRange: "12–16" },
+    { code: "STL", name: "Stool Analysis", category: "Microscopy", price: 1500, unit: "", referenceRange: "" },
+  ];
+  const labTests: Record<string, Awaited<ReturnType<typeof prisma.labTest.create>>> = {};
+  for (const t of labTestSpecs) {
+    labTests[t.code] = await prisma.labTest.create({ data: t });
+  }
+  console.log(`✔ ${labTestSpecs.length} lab tests created`);
 
   // --- Patients -----------------------------------------------------------
   const patientSpecs = [
@@ -389,9 +411,65 @@ async function main() {
   });
 
   console.log("✔ Live queue (waiting / with doctor / pharmacy) created");
+
+  // --- Lab orders --------------------------------------------------------
+  // A pending order on the patient currently at the pharmacy consultation.
+  await prisma.labOrder.create({
+    data: {
+      consultationId: pharmConsult.id,
+      status: "ORDERED",
+      orderedById: doctor.id,
+      notes: "Rule out infection.",
+      items: {
+        create: [
+          { labTestId: labTests["FBC"].id },
+          { labTestId: labTests["MAL"].id },
+        ],
+      },
+    },
+  });
+  // A completed order (with results) on a past consultation.
+  const pastConsult = await prisma.consultation.findFirst({
+    where: { visit: { status: "COMPLETED" } },
+  });
+  if (pastConsult) {
+    await prisma.labOrder.create({
+      data: {
+        consultationId: pastConsult.id,
+        status: "COMPLETED",
+        orderedById: doctor2.id,
+        items: {
+          create: [
+            { labTestId: labTests["MAL"].id, result: "Positive", flag: "ABNORMAL", resultedAt: daysAgo(9) },
+            { labTestId: labTests["GLU"].id, result: "96", flag: "NORMAL", resultedAt: daysAgo(9) },
+          ],
+        },
+      },
+    });
+  }
+  console.log("✔ Lab orders created");
+
+  // --- Appointments (upcoming) -------------------------------------------
+  const apptTargets = [patients[1], patients[4], patients[8], patients[2], patients[5]];
+  for (let i = 0; i < apptTargets.length; i++) {
+    const when = new Date();
+    when.setDate(when.getDate() + (i === 4 ? 0 : i + 1)); // last one is today
+    when.setHours(9 + i, 0, 0, 0);
+    await prisma.appointment.create({
+      data: {
+        patientId: apptTargets[i].id,
+        scheduledFor: when,
+        reason: i % 2 === 0 ? "Follow-up consultation" : "Routine check-up",
+        status: "SCHEDULED",
+        doctorId: (i % 2 === 0 ? doctor : doctor2).id,
+        createdById: receptionist.id,
+      },
+    });
+  }
+  console.log("✔ Appointments created");
   console.log("\n✅ Seed complete!");
   console.log("   Login with any of:");
-  console.log("     admin@hospital.cm / doctor@hospital.cm / pharmacist@hospital.cm / reception@hospital.cm");
+  console.log("     admin@ / doctor@ / pharmacist@ / reception@ / lab@hospital.cm");
   console.log(`   Password: ${DEMO_PASSWORD}\n`);
 }
 

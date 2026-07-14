@@ -8,6 +8,8 @@ import {
   Package,
   Receipt,
   UserCog,
+  CalendarDays,
+  FlaskConical,
   type LucideIcon,
 } from "lucide-react";
 import type { Role } from "@/lib/constants";
@@ -48,16 +50,28 @@ export const NAV_GROUPS: NavGroup[] = [
         roles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
       },
       {
+        label: "Appointments",
+        href: "/appointments",
+        icon: CalendarDays,
+        roles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
+      },
+      {
         label: "Patients",
         href: "/patients",
         icon: Users,
-        roles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
+        roles: ["ADMIN", "DOCTOR", "RECEPTIONIST", "LAB_TECH"],
       },
       {
         label: "Consultations",
         href: "/consultations",
         icon: Stethoscope,
         roles: ["ADMIN", "DOCTOR"],
+      },
+      {
+        label: "Laboratory",
+        href: "/laboratory",
+        icon: FlaskConical,
+        roles: ["ADMIN", "DOCTOR", "LAB_TECH"],
       },
     ],
   },

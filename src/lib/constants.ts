@@ -6,7 +6,13 @@
 // ============================================================================
 
 // ---- Roles -----------------------------------------------------------------
-export const ROLES = ["ADMIN", "DOCTOR", "PHARMACIST", "RECEPTIONIST"] as const;
+export const ROLES = [
+  "ADMIN",
+  "DOCTOR",
+  "PHARMACIST",
+  "RECEPTIONIST",
+  "LAB_TECH",
+] as const;
 export type Role = (typeof ROLES)[number];
 
 export const ROLE_LABELS: Record<Role, string> = {
@@ -14,7 +20,39 @@ export const ROLE_LABELS: Record<Role, string> = {
   DOCTOR: "Doctor",
   PHARMACIST: "Pharmacist",
   RECEPTIONIST: "Receptionist",
+  LAB_TECH: "Lab Technician",
 };
+
+// ---- Appointment status ----------------------------------------------------
+export const APPOINTMENT_STATUSES = [
+  "SCHEDULED",
+  "CHECKED_IN",
+  "COMPLETED",
+  "CANCELLED",
+  "NO_SHOW",
+] as const;
+export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
+
+export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
+  SCHEDULED: "Scheduled",
+  CHECKED_IN: "Checked in",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
+  NO_SHOW: "No-show",
+};
+
+// ---- Lab order status ------------------------------------------------------
+export const LAB_ORDER_STATUSES = ["ORDERED", "COMPLETED", "CANCELLED"] as const;
+export type LabOrderStatus = (typeof LAB_ORDER_STATUSES)[number];
+
+export const LAB_ORDER_STATUS_LABELS: Record<LabOrderStatus, string> = {
+  ORDERED: "Awaiting results",
+  COMPLETED: "Results ready",
+  CANCELLED: "Cancelled",
+};
+
+export const LAB_FLAGS = ["NORMAL", "HIGH", "LOW", "ABNORMAL"] as const;
+export type LabFlag = (typeof LAB_FLAGS)[number];
 
 // ---- Visit workflow status -------------------------------------------------
 export const VISIT_STATUSES = [

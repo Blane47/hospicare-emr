@@ -14,9 +14,11 @@ import { PageHeader } from "@/components/page-header";
 import {
   VisitStatusBadge,
   PrescriptionStatusBadge,
+  LabOrderStatusBadge,
 } from "@/components/status-badge";
 import { ConsultationWorkspace } from "./consultation-workspace";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const str = (v: number | null | undefined) =>
@@ -38,24 +40,36 @@ export default async function ConsultationPage({
         include: {
           doctor: true,
           prescription: { include: { items: { include: { drug: true } } } },
+          labOrders: { include: { items: { include: { labTest: true } } } },
         },
       },
     },
   });
   if (!visit) notFound();
 
-  const drugs = await prisma.drug.findMany({
-    where: { active: true },
-    orderBy: { name: "asc" },
-    select: {
-      id: true,
-      name: true,
-      strength: true,
-      form: true,
-      unitPrice: true,
-      quantityInStock: true,
-    },
-  });
+  const [drugs, labTests] = await Promise.all([
+    prisma.drug.findMany({
+      where: { active: true },
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        strength: true,
+        form: true,
+        unitPrice: true,
+        quantityInStock: true,
+      },
+    }),
+    prisma.labTest.findMany({
+      where: { active: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, category: true, price: true },
+    }),
+  ]);
+
+  const pendingLabOrder = visit.consultation?.labOrders.find(
+    (o) => o.status === "ORDERED",
+  );
 
   const patient = visit.patient;
   const fullName = `${patient.firstName} ${patient.lastName}`;
@@ -113,6 +127,7 @@ export default async function ConsultationPage({
         <ConsultationWorkspace
           visitId={visit.id}
           drugs={drugs}
+          labTests={labTests}
           initial={
             consultation
               ? {
@@ -135,6 +150,7 @@ export default async function ConsultationPage({
                       quantity: String(it.quantity),
                       instructions: it.instructions ?? "",
                     })) ?? [],
+                  labTestIds: pendingLabOrder?.items.map((i) => i.labTestId) ?? [],
                 }
               : undefined
           }
@@ -258,6 +274,58 @@ function ReadOnlyConsultation({
           </div>
         </Card>
       )}
+
+      {consultation.labOrders.length > 0 && (
+        <Card className="p-0">
+          <CardHeader className="flex-row items-center justify-between space-y-0 p-4">
+            <CardTitle className="text-base">Laboratory</CardTitle>
+            <LabOrderStatusBadge status={consultation.labOrders[0].status} />
+          </CardHeader>
+          <div className="overflow-x-auto border-t">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-muted-foreground bg-muted/40 text-left text-xs">
+                  <th className="p-3 font-medium">Test</th>
+                  <th className="p-3 font-medium">Result</th>
+                  <th className="p-3 font-medium">Reference</th>
+                  <th className="p-3 font-medium">Flag</th>
+                </tr>
+              </thead>
+              <tbody>
+                {consultation.labOrders.flatMap((o) =>
+                  o.items.map((it) => (
+                    <tr key={it.id} className="border-t">
+                      <td className="p-3 font-medium">{it.labTest.name}</td>
+                      <td className="p-3">
+                        {it.result ?? (
+                          <span className="text-muted-foreground">Pending</span>
+                        )}
+                        {it.result && it.labTest.unit ? ` ${it.labTest.unit}` : ""}
+                      </td>
+                      <td className="text-muted-foreground p-3">
+                        {it.labTest.referenceRange || "—"}
+                      </td>
+                      <td className="p-3">
+                        {it.flag === "NORMAL" && (
+                          <span className="text-emerald-600 dark:text-emerald-400">
+                            Normal
+                          </span>
+                        )}
+                        {it.flag && it.flag !== "NORMAL" && (
+                          <span className="text-red-600 dark:text-red-400">
+                            {it.flag.charAt(0) + it.flag.slice(1).toLowerCase()}
+                          </span>
+                        )}
+                        {!it.flag && "—"}
+                      </td>
+                    </tr>
+                  )),
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
@@ -268,6 +336,7 @@ async function getVisitConsultation() {
     include: {
       doctor: true,
       prescription: { include: { items: { include: { drug: true } } } },
+      labOrders: { include: { items: { include: { labTest: true } } } },
     },
   });
 }

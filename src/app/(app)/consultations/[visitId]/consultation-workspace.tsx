@@ -3,9 +3,10 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Trash2, Loader2, Send, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, Loader2, Send, CheckCircle2, Check } from "lucide-react";
 import { saveConsultation } from "../actions";
 import { formatFCFA } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,13 +50,22 @@ const newRow = (): Item => ({
   instructions: "",
 });
 
+type LabTestOption = {
+  id: string;
+  name: string;
+  category: string | null;
+  price: number;
+};
+
 export function ConsultationWorkspace({
   visitId,
   drugs,
+  labTests,
   initial,
 }: {
   visitId: string;
   drugs: DrugOption[];
+  labTests: LabTestOption[];
   initial?: {
     temperature?: string;
     systolic?: string;
@@ -68,10 +78,18 @@ export function ConsultationWorkspace({
     notes?: string;
     prescriptionNotes?: string;
     items?: Omit<Item, "key">[];
+    labTestIds?: string[];
   };
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [selectedLabs, setSelectedLabs] = useState<string[]>(
+    initial?.labTestIds ?? [],
+  );
+  const toggleLab = (id: string) =>
+    setSelectedLabs((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
 
   const [vitals, setVitals] = useState({
     temperature: initial?.temperature ?? "",
@@ -155,6 +173,7 @@ export function ConsultationWorkspace({
           quantity: it.quantity,
           instructions: it.instructions || undefined,
         })),
+        labTestIds: selectedLabs,
       });
 
       if (!res.ok) {
@@ -440,6 +459,66 @@ export function ConsultationWorkspace({
                 </div>
               </div>
             </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Laboratory tests */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Laboratory tests</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {labTests.length === 0 ? (
+            <p className="text-muted-foreground py-2 text-center text-sm">
+              No lab tests configured.
+            </p>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {labTests.map((t) => {
+                const checked = selectedLabs.includes(t.id);
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => toggleLab(t.id)}
+                    className={cn(
+                      "flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors",
+                      checked
+                        ? "border-primary bg-primary/5"
+                        : "hover:bg-muted/50",
+                    )}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "flex h-4 w-4 items-center justify-center rounded border",
+                          checked && "border-primary bg-primary text-primary-foreground",
+                        )}
+                      >
+                        {checked && <Check className="h-3 w-3" />}
+                      </span>
+                      <span>
+                        <span className="font-medium">{t.name}</span>
+                        {t.category && (
+                          <span className="text-muted-foreground block text-xs">
+                            {t.category}
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                    <span className="text-muted-foreground shrink-0 text-xs">
+                      {formatFCFA(t.price)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {selectedLabs.length > 0 && (
+            <p className="text-muted-foreground mt-3 text-sm">
+              {selectedLabs.length} test(s) will be sent to the laboratory.
+            </p>
           )}
         </CardContent>
       </Card>

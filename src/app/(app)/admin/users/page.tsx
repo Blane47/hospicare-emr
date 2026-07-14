@@ -23,6 +23,8 @@ const ROLE_TINT: Record<Role, string> = {
     "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300",
   RECEPTIONIST:
     "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
+  LAB_TECH:
+    "bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-300",
 };
 
 export default async function StaffPage() {

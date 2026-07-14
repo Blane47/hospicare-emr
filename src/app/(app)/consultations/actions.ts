@@ -40,6 +40,7 @@ const payloadSchema = z.object({
       }),
     )
     .default([]),
+  labTestIds: z.array(z.string()).default([]),
 });
 
 export type ConsultationPayload = z.input<typeof payloadSchema>;
@@ -127,8 +128,24 @@ export async function saveConsultation(
     });
   }
 
+  // Replace any pending (unresulted) lab order with the newly selected tests.
+  await prisma.labOrder.deleteMany({
+    where: { consultationId: consultation.id, status: "ORDERED" },
+  });
+  if (d.labTestIds.length > 0) {
+    await prisma.labOrder.create({
+      data: {
+        consultationId: consultation.id,
+        status: "ORDERED",
+        orderedById: user.id,
+        items: { create: d.labTestIds.map((id) => ({ labTestId: id })) },
+      },
+    });
+  }
+
   revalidatePath("/queue");
   revalidatePath("/consultations");
   revalidatePath("/pharmacy/dispense");
+  revalidatePath("/laboratory");
   return { ok: true };
 }

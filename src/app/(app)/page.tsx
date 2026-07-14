@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Package,
   ArrowRight,
+  FlaskConical,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
@@ -60,6 +61,8 @@ export default async function DashboardPage() {
     withDoctor,
     atPharmacy,
     pendingRx,
+    pendingLabs,
+    labsDoneToday,
     recentVisits,
     recentSales,
     drugs,
@@ -74,6 +77,10 @@ export default async function DashboardPage() {
     prisma.visit.count({ where: { status: "PHARMACY" } }),
     prisma.prescription.count({
       where: { status: { in: ["PENDING", "PARTIALLY_DISPENSED"] } },
+    }),
+    prisma.labOrder.count({ where: { status: "ORDERED" } }),
+    prisma.labOrder.count({
+      where: { status: "COMPLETED", updatedAt: { gte: today } },
     }),
     prisma.visit.findMany({
       where: { createdAt: { gte: since } },
@@ -139,6 +146,7 @@ export default async function DashboardPage() {
   const isDoctor = role === "DOCTOR";
   const isPharm = role === "PHARMACIST";
   const isRecep = role === "RECEPTIONIST";
+  const isLab = role === "LAB_TECH";
 
   const greeting = (() => {
     const h = new Date().getHours();
@@ -238,6 +246,22 @@ export default async function DashboardPage() {
             label="Low-stock drugs"
             value={lowStock.length}
             tint="bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
+          />
+        )}
+        {isLab && (
+          <StatTile
+            icon={FlaskConical}
+            label="Lab orders pending"
+            value={pendingLabs}
+            tint="bg-primary/10 text-primary"
+          />
+        )}
+        {isLab && (
+          <StatTile
+            icon={CheckCircle2}
+            label="Results entered today"
+            value={labsDoneToday}
+            tint="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
           />
         )}
       </div>
@@ -347,6 +371,27 @@ export default async function DashboardPage() {
                 <div className="text-2xl font-semibold">{atPharmacy}</div>
                 <div className="text-muted-foreground text-xs">At pharmacy</div>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {isLab && (
+          <Card className="lg:col-span-3">
+            <CardHeader className="flex-row items-center justify-between space-y-0">
+              <CardTitle className="text-base">Laboratory worklist</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                render={<Link href="/laboratory" />}
+              >
+                Open laboratory <ArrowRight className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-sm">
+                <span className="text-foreground font-medium">{pendingLabs}</span>{" "}
+                lab order(s) awaiting results.
+              </p>
             </CardContent>
           </Card>
         )}
