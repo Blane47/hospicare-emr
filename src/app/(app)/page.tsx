@@ -17,6 +17,7 @@ import {
   formatFCFA,
   PAYMENT_METHODS,
   PAYMENT_METHOD_LABELS,
+  drugExpiryStatus,
   type Role,
 } from "@/lib/constants";
 import { StatTile } from "@/components/stat-tile";
@@ -129,6 +130,10 @@ export default async function DashboardPage() {
   const lowStock = drugs
     .filter((d) => d.quantityInStock <= d.reorderLevel)
     .sort((a, b) => a.quantityInStock - b.quantityInStock);
+  const expiringSoon = drugs.filter((d) => {
+    const s = drugExpiryStatus(d.expiryDate);
+    return s === "expiring" || s === "expired";
+  }).length;
 
   const isAdmin = role === "ADMIN";
   const isDoctor = role === "DOCTOR";
@@ -308,6 +313,14 @@ export default async function DashboardPage() {
                     </li>
                   ))}
                 </ul>
+              )}
+              {expiringSoon > 0 && (
+                <p className="text-muted-foreground mt-3 border-t pt-3 text-xs">
+                  <span className="font-medium text-red-600 dark:text-red-400">
+                    {expiringSoon}
+                  </span>{" "}
+                  drug(s) expired or expiring soon
+                </p>
               )}
             </CardContent>
           </Card>

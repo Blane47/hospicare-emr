@@ -62,7 +62,7 @@ async function main() {
     { name: "Coartem", genericName: "Artemether/Lumefantrine", category: "Antimalarial", form: "TABLET", strength: "20/120mg", unitPrice: 1200, stock: 120, reorderLevel: 20, expiryInDays: 240 },
     { name: "Paracetamol", genericName: "Paracetamol", category: "Analgesic", form: "TABLET", strength: "500mg", unitPrice: 25, stock: 800, reorderLevel: 100, expiryInDays: 400 },
     { name: "Amoxicillin", genericName: "Amoxicillin", category: "Antibiotic", form: "CAPSULE", strength: "500mg", unitPrice: 75, stock: 300, reorderLevel: 50, expiryInDays: 300 },
-    { name: "Amoxicillin Syrup", genericName: "Amoxicillin", category: "Antibiotic", form: "SYRUP", strength: "125mg/5ml", unitPrice: 900, stock: 40, reorderLevel: 15, expiryInDays: 120 },
+    { name: "Amoxicillin Syrup", genericName: "Amoxicillin", category: "Antibiotic", form: "SYRUP", strength: "125mg/5ml", unitPrice: 900, stock: 40, reorderLevel: 15, expiryInDays: 55 }, // expiring soon
     { name: "Metronidazole", genericName: "Metronidazole", category: "Antibiotic", form: "TABLET", strength: "250mg", unitPrice: 30, stock: 500, reorderLevel: 80, expiryInDays: 360 },
     { name: "Ibuprofen", genericName: "Ibuprofen", category: "Analgesic", form: "TABLET", strength: "400mg", unitPrice: 40, stock: 250, reorderLevel: 60, expiryInDays: 300 },
     { name: "Ciprofloxacin", genericName: "Ciprofloxacin", category: "Antibiotic", form: "TABLET", strength: "500mg", unitPrice: 120, stock: 8, reorderLevel: 20, expiryInDays: 200 }, // low stock
@@ -74,7 +74,7 @@ async function main() {
     { name: "Ferrous Sulphate", genericName: "Ferrous Sulphate", category: "Supplement", form: "TABLET", strength: "200mg", unitPrice: 20, stock: 600, reorderLevel: 100, expiryInDays: 450 },
     { name: "Albendazole", genericName: "Albendazole", category: "Antihelmintic", form: "TABLET", strength: "400mg", unitPrice: 150, stock: 90, reorderLevel: 20, expiryInDays: 260 },
     { name: "Salbutamol Syrup", genericName: "Salbutamol", category: "Bronchodilator", form: "SYRUP", strength: "2mg/5ml", unitPrice: 1100, stock: 35, reorderLevel: 15, expiryInDays: 90 },
-    { name: "Cotrimoxazole", genericName: "Sulfamethoxazole/Trimethoprim", category: "Antibiotic", form: "TABLET", strength: "480mg", unitPrice: 45, stock: 5, reorderLevel: 25, expiryInDays: 210 }, // low stock
+    { name: "Cotrimoxazole", genericName: "Sulfamethoxazole/Trimethoprim", category: "Antibiotic", form: "TABLET", strength: "480mg", unitPrice: 45, stock: 5, reorderLevel: 25, expiryInDays: -12 }, // low stock + expired
     { name: "Vitamin C", genericName: "Ascorbic Acid", category: "Supplement", form: "TABLET", strength: "500mg", unitPrice: 15, stock: 700, reorderLevel: 100, expiryInDays: 500 },
   ];
 

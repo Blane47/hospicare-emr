@@ -13,6 +13,7 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { VisitStatusBadge } from "@/components/status-badge";
 import { StartVisitDialog } from "../../queue/start-visit-dialog";
+import { VitalsTrends, type VitalsPoint } from "./vitals-trends";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,6 +58,24 @@ export default async function PatientProfilePage({
   const canStartVisit = user.role === "RECEPTIONIST" || user.role === "ADMIN";
   const canViewConsult = user.role === "DOCTOR" || user.role === "ADMIN";
   const fullName = `${patient.firstName} ${patient.lastName}`;
+
+  // Vitals recorded across visits, oldest → newest, for the trend charts.
+  const vitalsData: VitalsPoint[] = patient.visits
+    .filter(
+      (v) =>
+        v.consultation &&
+        (v.consultation.systolic ||
+          v.consultation.weightKg ||
+          v.consultation.temperature),
+    )
+    .map((v) => ({
+      date: formatDate(v.createdAt),
+      systolic: v.consultation!.systolic,
+      diastolic: v.consultation!.diastolic,
+      weight: v.consultation!.weightKg,
+      temp: v.consultation!.temperature,
+    }))
+    .reverse();
 
   return (
     <div>
@@ -193,6 +212,17 @@ export default async function PatientProfilePage({
           </Card>
         </div>
       </div>
+
+      {vitalsData.length >= 2 && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-base">Vitals trends</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <VitalsTrends data={vitalsData} />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

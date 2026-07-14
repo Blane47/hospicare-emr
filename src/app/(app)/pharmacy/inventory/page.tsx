@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/session";
 import {
   formatFCFA,
   formatDate,
+  drugExpiryStatus,
   DRUG_FORM_LABELS,
   type DrugForm,
 } from "@/lib/constants";
@@ -49,6 +50,12 @@ export default async function InventoryPage({
   });
 
   const lowStock = drugs.filter((d) => d.quantityInStock <= d.reorderLevel);
+  const expiredCount = drugs.filter(
+    (d) => drugExpiryStatus(d.expiryDate) === "expired",
+  ).length;
+  const expiringCount = drugs.filter(
+    (d) => drugExpiryStatus(d.expiryDate) === "expiring",
+  ).length;
 
   return (
     <div>
@@ -67,6 +74,28 @@ export default async function InventoryPage({
           <span>
             <span className="font-semibold">{lowStock.length}</span> drug(s) at
             or below reorder level — consider restocking.
+          </span>
+        </div>
+      )}
+
+      {(expiredCount > 0 || expiringCount > 0) && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+          <TriangleAlert className="h-4 w-4 shrink-0" />
+          <span>
+            {expiredCount > 0 && (
+              <>
+                <span className="font-semibold">{expiredCount}</span> drug(s)
+                expired
+              </>
+            )}
+            {expiredCount > 0 && expiringCount > 0 && " · "}
+            {expiringCount > 0 && (
+              <>
+                <span className="font-semibold">{expiringCount}</span> expiring
+                within {90} days
+              </>
+            )}
+            {" — review stock."}
           </span>
         </div>
       )}
@@ -141,8 +170,33 @@ export default async function InventoryPage({
                     <TableCell className="text-muted-foreground">
                       {d.reorderLevel}
                     </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {d.expiryDate ? formatDate(d.expiryDate) : "—"}
+                    <TableCell className="text-xs">
+                      {(() => {
+                        const s = drugExpiryStatus(d.expiryDate);
+                        return (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-muted-foreground">
+                              {d.expiryDate ? formatDate(d.expiryDate) : "—"}
+                            </span>
+                            {s === "expired" && (
+                              <Badge
+                                variant="outline"
+                                className="border-red-200 bg-red-100 text-red-800 dark:border-red-500/20 dark:bg-red-500/15 dark:text-red-300"
+                              >
+                                Expired
+                              </Badge>
+                            )}
+                            {s === "expiring" && (
+                              <Badge
+                                variant="outline"
+                                className="border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/15 dark:text-amber-300"
+                              >
+                                Soon
+                              </Badge>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell className="text-right">
                       <RestockDialog

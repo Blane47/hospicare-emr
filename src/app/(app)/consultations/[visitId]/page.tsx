@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, TriangleAlert } from "lucide-react";
+import { ArrowLeft, TriangleAlert, Printer } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/session";
 import {
@@ -140,7 +140,7 @@ export default async function ConsultationPage({
           }
         />
       ) : (
-        <ReadOnlyConsultation consultation={consultation} />
+        <ReadOnlyConsultation consultation={consultation} visitId={visit.id} />
       )}
     </div>
   );
@@ -148,10 +148,12 @@ export default async function ConsultationPage({
 
 function ReadOnlyConsultation({
   consultation,
+  visitId,
 }: {
   consultation: NonNullable<
     Awaited<ReturnType<typeof getVisitConsultation>>
   > | null;
+  visitId: string;
 }) {
   if (!consultation) {
     return (
@@ -215,7 +217,16 @@ function ReadOnlyConsultation({
         <Card className="p-0">
           <CardHeader className="flex-row items-center justify-between space-y-0 p-4">
             <CardTitle className="text-base">Prescription</CardTitle>
-            <PrescriptionStatusBadge status={consultation.prescription.status} />
+            <div className="flex items-center gap-2">
+              <PrescriptionStatusBadge status={consultation.prescription.status} />
+              <Button
+                variant="outline"
+                size="sm"
+                render={<Link href={`/consultations/${visitId}/prescription`} />}
+              >
+                <Printer className="h-4 w-4" /> Print
+              </Button>
+            </div>
           </CardHeader>
           <div className="overflow-x-auto border-t">
             <table className="w-full text-sm">

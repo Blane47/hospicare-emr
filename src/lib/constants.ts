@@ -154,6 +154,22 @@ export function formatDateTime(date: Date | string): string {
   });
 }
 
+// Drugs within this many days of expiry are flagged "expiring soon".
+export const EXPIRY_SOON_DAYS = 90;
+
+export type ExpiryStatus = "expired" | "expiring" | "ok" | "none";
+
+export function drugExpiryStatus(
+  expiryDate: Date | string | null | undefined,
+): ExpiryStatus {
+  if (!expiryDate) return "none";
+  const d = typeof expiryDate === "string" ? new Date(expiryDate) : expiryDate;
+  const diffDays = (d.getTime() - Date.now()) / 86_400_000;
+  if (diffDays < 0) return "expired";
+  if (diffDays <= EXPIRY_SOON_DAYS) return "expiring";
+  return "ok";
+}
+
 // Age in whole years from a date of birth.
 export function calculateAge(dob: Date | string): number {
   const birth = typeof dob === "string" ? new Date(dob) : dob;
