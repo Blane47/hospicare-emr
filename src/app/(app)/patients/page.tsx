@@ -28,10 +28,10 @@ export default async function PatientsPage({
   const where = q
     ? {
         OR: [
-          { firstName: { contains: q } },
-          { lastName: { contains: q } },
-          { patientNumber: { contains: q } },
-          { phone: { contains: q } },
+          { firstName: { contains: q, mode: "insensitive" as const } },
+          { lastName: { contains: q, mode: "insensitive" as const } },
+          { patientNumber: { contains: q, mode: "insensitive" as const } },
+          { phone: { contains: q, mode: "insensitive" as const } },
         ],
       }
     : {};

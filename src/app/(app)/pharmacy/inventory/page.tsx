@@ -36,10 +36,10 @@ export default async function InventoryPage({
   const where = q
     ? {
         OR: [
-          { name: { contains: q } },
-          { genericName: { contains: q } },
-          { category: { contains: q } },
-          { sku: { contains: q } },
+          { name: { contains: q, mode: "insensitive" as const } },
+          { genericName: { contains: q, mode: "insensitive" as const } },
+          { category: { contains: q, mode: "insensitive" as const } },
+          { sku: { contains: q, mode: "insensitive" as const } },
         ],
       }
     : {};
