@@ -161,6 +161,7 @@ export default async function ConsultationPage({
           visitId={visit.id}
           drugs={drugs}
           labTests={labTests}
+          chiefComplaint={visit.chiefComplaint}
           triageVitals={triageVitals}
           triagePriority={visit.triagePriority}
           initial={

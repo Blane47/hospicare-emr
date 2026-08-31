@@ -141,6 +141,11 @@ async function main() {
     { code: "HBS", name: "Hepatitis B (HBsAg)", category: "Serology", price: 3000, unit: "", referenceRange: "Negative" },
     { code: "HB", name: "Haemoglobin", category: "Haematology", price: 1000, unit: "g/dL", referenceRange: "12–16" },
     { code: "STL", name: "Stool Analysis", category: "Microscopy", price: 1500, unit: "", referenceRange: "" },
+    { code: "BSM", name: "Blood Smear (MP)", category: "Parasitology", price: 1500, unit: "", referenceRange: "No parasites seen" },
+    { code: "CXR", name: "Chest X-ray", category: "Imaging", price: 8000, unit: "", referenceRange: "Normal" },
+    { code: "ELEC", name: "Electrolytes", category: "Biochemistry", price: 4000, unit: "mmol/L", referenceRange: "" },
+    { code: "LFT", name: "Liver Function Test", category: "Biochemistry", price: 5000, unit: "", referenceRange: "" },
+    { code: "ECG", name: "Electrocardiogram (ECG)", category: "Cardiology", price: 6000, unit: "", referenceRange: "Normal sinus rhythm" },
   ];
   const labTests: Record<string, Awaited<ReturnType<typeof prisma.labTest.create>>> = {};
   for (const t of labTestSpecs) {

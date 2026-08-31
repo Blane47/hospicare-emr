@@ -1,11 +1,20 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Trash2, Loader2, Send, CheckCircle2, Check } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Loader2,
+  Send,
+  CheckCircle2,
+  Check,
+  Sparkles,
+} from "lucide-react";
 import { saveConsultation } from "../actions";
 import { formatFCFA } from "@/lib/constants";
+import { matchCdsRules, type CdsDrug } from "@/lib/cds";
 import { cn } from "@/lib/utils";
 import { TriagePriorityBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -62,6 +71,7 @@ export function ConsultationWorkspace({
   visitId,
   drugs,
   labTests,
+  chiefComplaint,
   triageVitals,
   triagePriority,
   initial,
@@ -69,6 +79,7 @@ export function ConsultationWorkspace({
   visitId: string;
   drugs: DrugOption[];
   labTests: LabTestOption[];
+  chiefComplaint?: string | null;
   triageVitals: { label: string; value: string }[];
   triagePriority?: string | null;
   initial?: {
@@ -119,6 +130,40 @@ export function ConsultationWorkspace({
     const qty = parseInt(it.quantity) || 0;
     return sum + (drug ? drug.unitPrice * qty : 0);
   }, 0);
+
+  // --- Clinical decision support ------------------------------------------
+  const suggestions = useMemo(
+    () => matchCdsRules(`${chiefComplaint ?? ""} ${symptoms} ${diagnosis}`),
+    [chiefComplaint, symptoms, diagnosis],
+  );
+  const findLabByName = (name: string) =>
+    labTests.find((t) => t.name.toLowerCase() === name.toLowerCase());
+  const findDrugByName = (name: string) =>
+    drugs.find((d) => d.name.toLowerCase() === name.toLowerCase());
+
+  function addSuggestedTest(name: string) {
+    const t = findLabByName(name);
+    if (!t) return;
+    setSelectedLabs((prev) => (prev.includes(t.id) ? prev : [...prev, t.id]));
+    toast.success(`Added test: ${t.name}`);
+  }
+  function addSuggestedDrug(d: CdsDrug) {
+    const drug = findDrugByName(d.name);
+    if (!drug) return;
+    setItems((prev) => [
+      ...prev,
+      {
+        key: `row-${rowSeq++}`,
+        drugId: drug.id,
+        dosage: d.dosage,
+        frequency: d.frequency,
+        durationDays: d.durationDays ? String(d.durationDays) : "",
+        quantity: d.durationDays ? String(d.durationDays) : "1",
+        instructions: d.note ?? "",
+      },
+    ]);
+    toast.success(`Added drug: ${drug.name}`);
+  }
 
   function handleSave() {
     if (!diagnosis.trim()) {
@@ -243,6 +288,99 @@ export function ConsultationWorkspace({
           </div>
         </CardContent>
       </Card>
+
+      {/* Clinical decision support — reacts to complaint / symptoms / diagnosis */}
+      {suggestions.length > 0 && (
+        <Card className="border-primary/40 bg-primary/[0.03]">
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Sparkles className="text-primary h-4 w-4" /> Clinical suggestions
+            </CardTitle>
+            <span className="text-muted-foreground text-xs">
+              Suggestions only — you decide
+            </span>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {suggestions.map((rule) => (
+              <div key={rule.key} className="bg-card rounded-lg border p-3">
+                <div className="mb-2 text-sm font-semibold">{rule.label}</div>
+                {rule.tests.length > 0 && (
+                  <div className="mb-2">
+                    <div className="text-muted-foreground mb-1 text-xs">
+                      Suggested tests
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {rule.tests.map((tn) => {
+                        const t = findLabByName(tn);
+                        const added = !!t && selectedLabs.includes(t.id);
+                        return (
+                          <button
+                            key={tn}
+                            type="button"
+                            disabled={!t || added}
+                            onClick={() => addSuggestedTest(tn)}
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors",
+                              !t
+                                ? "opacity-40"
+                                : added
+                                  ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300"
+                                  : "hover:bg-muted",
+                            )}
+                          >
+                            {added ? (
+                              <Check className="h-3 w-3" />
+                            ) : (
+                              <Plus className="h-3 w-3" />
+                            )}
+                            {tn}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {rule.drugs.length > 0 && (
+                  <div>
+                    <div className="text-muted-foreground mb-1 text-xs">
+                      Suggested first-line drugs
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {rule.drugs.map((d, i) => {
+                        const drug = findDrugByName(d.name);
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            disabled={!drug}
+                            onClick={() => addSuggestedDrug(d)}
+                            title={drug ? "" : "Not in the pharmacy catalogue"}
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors",
+                              !drug ? "opacity-40" : "hover:bg-muted",
+                            )}
+                          >
+                            <Plus className="h-3 w-3" />
+                            <span className="font-medium">{d.name}</span>
+                            <span className="text-muted-foreground">
+                              · {d.dosage} {d.frequency}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {rule.note && (
+                  <p className="text-muted-foreground mt-2 text-xs italic">
+                    {rule.note}
+                  </p>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Prescription builder */}
       <Card>
