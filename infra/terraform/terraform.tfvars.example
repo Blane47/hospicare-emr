@@ -1,0 +1,15 @@
+# Copy this file to terraform.tfvars and fill in your values.
+# terraform.tfvars is git-ignored — never commit real secrets.
+
+aws_region  = "eu-central-1"
+project     = "hospicare"
+environment = "prod"
+
+# Database master password (choose a strong value).
+db_password = "CHANGE_ME_strong_password"
+
+# GitHub personal access token so Amplify can connect the repository.
+amplify_github_token = "ghp_xxxxxxxxxxxxxxxxxxxx"
+
+# Where CloudWatch alarm emails should go.
+alert_email = "you@example.com"
