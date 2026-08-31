@@ -15,6 +15,7 @@ import {
   VisitStatusBadge,
   PrescriptionStatusBadge,
   LabOrderStatusBadge,
+  TriagePriorityBadge,
 } from "@/components/status-badge";
 import { ConsultationWorkspace } from "./consultation-workspace";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,37 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const str = (v: number | null | undefined) =>
   v === null || v === undefined ? "" : String(v);
+
+// Vitals now live on the visit (captured by the nurse at triage). Build a
+// compact display list of just the values that were recorded.
+function buildTriageVitals(v: {
+  temperature: number | null;
+  systolic: number | null;
+  diastolic: number | null;
+  pulse: number | null;
+  respRate: number | null;
+  spo2: number | null;
+  weightKg: number | null;
+  heightCm: number | null;
+  lmp: string | null;
+}): { label: string; value: string }[] {
+  const rows: { label: string; value: string }[] = [];
+  const add = (label: string, value: string | null) => {
+    if (value) rows.push({ label, value });
+  };
+  add("Temp", v.temperature != null ? `${v.temperature} °C` : null);
+  add(
+    "Blood pressure",
+    v.systolic && v.diastolic ? `${v.systolic}/${v.diastolic} mmHg` : null,
+  );
+  add("Pulse", v.pulse != null ? `${v.pulse} bpm` : null);
+  add("Resp. rate", v.respRate != null ? `${v.respRate} /min` : null);
+  add("SpO₂", v.spo2 != null ? `${v.spo2} %` : null);
+  add("Weight", v.weightKg != null ? `${v.weightKg} kg` : null);
+  add("Height", v.heightCm != null ? `${v.heightCm} cm` : null);
+  add("LMP", v.lmp || null);
+  return rows;
+}
 
 export default async function ConsultationPage({
   params,
@@ -73,8 +105,9 @@ export default async function ConsultationPage({
 
   const patient = visit.patient;
   const fullName = `${patient.firstName} ${patient.lastName}`;
-  const editable = visit.status === "WAITING" || visit.status === "WITH_DOCTOR";
+  const editable = visit.status === "TRIAGED" || visit.status === "WITH_DOCTOR";
   const consultation = visit.consultation;
+  const triageVitals = buildTriageVitals(visit);
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -128,15 +161,11 @@ export default async function ConsultationPage({
           visitId={visit.id}
           drugs={drugs}
           labTests={labTests}
+          triageVitals={triageVitals}
+          triagePriority={visit.triagePriority}
           initial={
             consultation
               ? {
-                  temperature: str(consultation.temperature),
-                  systolic: str(consultation.systolic),
-                  diastolic: str(consultation.diastolic),
-                  pulse: str(consultation.pulse),
-                  weightKg: str(consultation.weightKg),
-                  heightCm: str(consultation.heightCm),
                   symptoms: consultation.symptoms ?? "",
                   diagnosis: consultation.diagnosis ?? "",
                   notes: consultation.notes ?? "",
@@ -156,7 +185,12 @@ export default async function ConsultationPage({
           }
         />
       ) : (
-        <ReadOnlyConsultation consultation={consultation} visitId={visit.id} />
+        <ReadOnlyConsultation
+          consultation={consultation}
+          visitId={visit.id}
+          triageVitals={triageVitals}
+          triagePriority={visit.triagePriority}
+        />
       )}
     </div>
   );
@@ -165,11 +199,15 @@ export default async function ConsultationPage({
 function ReadOnlyConsultation({
   consultation,
   visitId,
+  triageVitals,
+  triagePriority,
 }: {
   consultation: NonNullable<
     Awaited<ReturnType<typeof getVisitConsultation>>
   > | null;
   visitId: string;
+  triageVitals: { label: string; value: string }[];
+  triagePriority: string | null;
 }) {
   if (!consultation) {
     return (
@@ -181,34 +219,26 @@ function ReadOnlyConsultation({
     );
   }
 
-  const vitalRows: [string, string][] = [
-    ["Temperature", consultation.temperature ? `${consultation.temperature} °C` : "—"],
-    [
-      "Blood pressure",
-      consultation.systolic && consultation.diastolic
-        ? `${consultation.systolic}/${consultation.diastolic} mmHg`
-        : "—",
-    ],
-    ["Pulse", consultation.pulse ? `${consultation.pulse} bpm` : "—"],
-    ["Weight", consultation.weightKg ? `${consultation.weightKg} kg` : "—"],
-    ["Height", consultation.heightCm ? `${consultation.heightCm} cm` : "—"],
-  ];
-
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base">Consultation summary</CardTitle>
+          {triagePriority && triagePriority !== "NORMAL" && (
+            <TriagePriorityBadge priority={triagePriority} />
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-            {vitalRows.map(([label, value]) => (
-              <div key={label}>
-                <div className="text-muted-foreground text-xs">{label}</div>
-                <div className="font-medium">{value}</div>
-              </div>
-            ))}
-          </div>
+          {triageVitals.length > 0 && (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+              {triageVitals.map(({ label, value }) => (
+                <div key={label}>
+                  <div className="text-muted-foreground text-xs">{label}</div>
+                  <div className="font-medium">{value}</div>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="grid gap-3 border-t pt-4 sm:grid-cols-2">
             <div>
               <div className="text-muted-foreground text-xs">Symptoms</div>

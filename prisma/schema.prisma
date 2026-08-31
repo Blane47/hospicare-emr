@@ -44,6 +44,7 @@ model User {
   appointmentsCreated  Appointment[]   @relation("AppointmentCreatedBy")
   appointmentsAsDoctor Appointment[]   @relation("AppointmentDoctor")
   labOrders            LabOrder[]      @relation("LabOrderedBy")
+  triagedVisits        Visit[]         @relation("VisitTriagedBy")
 }
 
 // ---------------------------------------------------------------------------
@@ -89,12 +90,28 @@ model Visit {
   visitNumber    String   @unique // e.g. "V-000123"
   patientId      String
   patient        Patient  @relation(fields: [patientId], references: [id])
-  status         String   @default("WAITING") // WAITING | WITH_DOCTOR | PHARMACY | COMPLETED | CANCELLED
+  status         String   @default("WAITING") // WAITING(triage) | TRIAGED | WITH_DOCTOR | PHARMACY | COMPLETED | CANCELLED
   chiefComplaint String? // why they came in (reception intake)
   createdById    String?
   createdBy      User?    @relation("VisitCreatedBy", fields: [createdById], references: [id])
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  // Triage — vitals + priority recorded by a nurse BEFORE the doctor sees the patient.
+  triagePriority String? // NORMAL | URGENT | EMERGENCY
+  triageNotes    String?
+  temperature    Float? // °C
+  systolic       Int? // mmHg
+  diastolic      Int? // mmHg
+  pulse          Int? // bpm
+  respRate       Int? // breaths / min
+  spo2           Int? // oxygen saturation %
+  weightKg       Float?
+  heightCm       Float?
+  lmp            String? // last menstrual period (free text / date)
+  triagedById    String?
+  triagedBy      User?     @relation("VisitTriagedBy", fields: [triagedById], references: [id])
+  triagedAt      DateTime?
 
   consultation Consultation? // filled in by the doctor
   appointment  Appointment? // set if this visit came from an appointment check-in
@@ -113,15 +130,7 @@ model Consultation {
   doctorId String
   doctor   User   @relation(fields: [doctorId], references: [id])
 
-  // Vitals
-  temperature Float? // °C
-  systolic    Int? // mmHg (BP top number)
-  diastolic   Int? // mmHg (BP bottom number)
-  pulse       Int? // bpm
-  weightKg    Float?
-  heightCm    Float?
-
-  // Clinical record
+  // Clinical record (vitals now live on the Visit, captured by the nurse at triage)
   symptoms  String?
   diagnosis String?
   notes     String?

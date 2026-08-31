@@ -6,11 +6,11 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/session";
 
-/** Doctor claims a waiting visit → status becomes WITH_DOCTOR. */
+/** Doctor claims a triaged visit → status becomes WITH_DOCTOR. */
 export async function openConsultation(visitId: string) {
   await requireRole(["DOCTOR", "ADMIN"]);
   await prisma.visit.updateMany({
-    where: { id: visitId, status: "WAITING" },
+    where: { id: visitId, status: "TRIAGED" },
     data: { status: "WITH_DOCTOR" },
   });
   redirect(`/consultations/${visitId}`);
@@ -18,12 +18,6 @@ export async function openConsultation(visitId: string) {
 
 const payloadSchema = z.object({
   visitId: z.string().min(1),
-  temperature: z.coerce.number().optional().nullable(),
-  systolic: z.coerce.number().int().optional().nullable(),
-  diastolic: z.coerce.number().int().optional().nullable(),
-  pulse: z.coerce.number().int().optional().nullable(),
-  weightKg: z.coerce.number().optional().nullable(),
-  heightCm: z.coerce.number().optional().nullable(),
   symptoms: z.string().optional(),
   diagnosis: z.string().trim().min(1, "Diagnosis is required"),
   notes: z.string().optional(),
@@ -72,26 +66,21 @@ export async function saveConsultation(
     return { ok: false, error: "This visit is already closed." };
   }
 
-  const vitals = {
-    temperature: d.temperature ?? null,
-    systolic: d.systolic ?? null,
-    diastolic: d.diastolic ?? null,
-    pulse: d.pulse ?? null,
-    weightKg: d.weightKg ?? null,
-    heightCm: d.heightCm ?? null,
+  const clinical = {
     symptoms: d.symptoms || null,
     diagnosis: d.diagnosis,
     notes: d.notes || null,
   };
 
-  // Upsert the consultation (1:1 with the visit).
+  // Upsert the consultation (1:1 with the visit). Vitals live on the visit
+  // (recorded by the nurse at triage), so they are not written here.
   const consultation = visit.consultation
     ? await prisma.consultation.update({
         where: { id: visit.consultation.id },
-        data: vitals,
+        data: clinical,
       })
     : await prisma.consultation.create({
-        data: { visitId: visit.id, doctorId: user.id, ...vitals },
+        data: { visitId: visit.id, doctorId: user.id, ...clinical },
       });
 
   // Replace any existing (undispensed) prescription with the new one.

@@ -3,16 +3,20 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useT } from "@/components/locale-provider";
-import type {
-  VisitStatus,
-  PrescriptionStatus,
-  AppointmentStatus,
-  LabOrderStatus,
+import {
+  TRIAGE_PRIORITY_LABELS,
+  type VisitStatus,
+  type PrescriptionStatus,
+  type AppointmentStatus,
+  type LabOrderStatus,
+  type TriagePriority,
 } from "@/lib/constants";
 
 const VISIT_STYLES: Record<VisitStatus, string> = {
   WAITING:
     "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20",
+  TRIAGED:
+    "bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-500/15 dark:text-cyan-300 dark:border-cyan-500/20",
   WITH_DOCTOR:
     "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/20",
   PHARMACY:
@@ -28,6 +32,24 @@ export function VisitStatusBadge({ status }: { status: string }) {
   return (
     <Badge variant="outline" className={cn("font-medium", VISIT_STYLES[s] ?? "")}>
       {t(`visit.${status}`)}
+    </Badge>
+  );
+}
+
+const PRIORITY_STYLES: Record<TriagePriority, string> = {
+  NORMAL: "bg-muted text-muted-foreground border-border",
+  URGENT:
+    "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20",
+  EMERGENCY:
+    "bg-red-100 text-red-800 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/20",
+};
+
+export function TriagePriorityBadge({ priority }: { priority: string }) {
+  const p = priority as TriagePriority;
+  if (!p || !(p in PRIORITY_STYLES)) return null;
+  return (
+    <Badge variant="outline" className={cn("font-medium", PRIORITY_STYLES[p])}>
+      {TRIAGE_PRIORITY_LABELS[p] ?? priority}
     </Badge>
   );
 }

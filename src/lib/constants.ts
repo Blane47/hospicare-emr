@@ -9,6 +9,7 @@
 export const ROLES = [
   "ADMIN",
   "DOCTOR",
+  "NURSE",
   "PHARMACIST",
   "RECEPTIONIST",
   "LAB_TECH",
@@ -18,6 +19,7 @@ export type Role = (typeof ROLES)[number];
 export const ROLE_LABELS: Record<Role, string> = {
   ADMIN: "Administrator",
   DOCTOR: "Doctor",
+  NURSE: "Nurse",
   PHARMACIST: "Pharmacist",
   RECEPTIONIST: "Receptionist",
   LAB_TECH: "Lab Technician",
@@ -57,6 +59,7 @@ export type LabFlag = (typeof LAB_FLAGS)[number];
 // ---- Visit workflow status -------------------------------------------------
 export const VISIT_STATUSES = [
   "WAITING",
+  "TRIAGED",
   "WITH_DOCTOR",
   "PHARMACY",
   "COMPLETED",
@@ -65,11 +68,22 @@ export const VISIT_STATUSES = [
 export type VisitStatus = (typeof VISIT_STATUSES)[number];
 
 export const VISIT_STATUS_LABELS: Record<VisitStatus, string> = {
-  WAITING: "Waiting for doctor",
+  WAITING: "Waiting for triage",
+  TRIAGED: "Waiting for doctor",
   WITH_DOCTOR: "With doctor",
   PHARMACY: "At pharmacy",
   COMPLETED: "Completed",
   CANCELLED: "Cancelled",
+};
+
+// ---- Triage priority -------------------------------------------------------
+export const TRIAGE_PRIORITIES = ["NORMAL", "URGENT", "EMERGENCY"] as const;
+export type TriagePriority = (typeof TRIAGE_PRIORITIES)[number];
+
+export const TRIAGE_PRIORITY_LABELS: Record<TriagePriority, string> = {
+  NORMAL: "Normal",
+  URGENT: "Urgent",
+  EMERGENCY: "Emergency",
 };
 
 // ---- Prescription status ---------------------------------------------------

@@ -11,6 +11,7 @@ import {
   CalendarDays,
   FlaskConical,
   ClipboardList,
+  HeartPulse,
   type LucideIcon,
 } from "lucide-react";
 import type { Role } from "@/lib/constants";
@@ -48,7 +49,13 @@ export const NAV_GROUPS: NavGroup[] = [
         label: "Patient Queue",
         href: "/queue",
         icon: ListChecks,
-        roles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
+        roles: ["ADMIN", "DOCTOR", "NURSE", "RECEPTIONIST"],
+      },
+      {
+        label: "Triage",
+        href: "/triage",
+        icon: HeartPulse,
+        roles: ["ADMIN", "NURSE"],
       },
       {
         label: "Appointments",
@@ -60,7 +67,7 @@ export const NAV_GROUPS: NavGroup[] = [
         label: "Patients",
         href: "/patients",
         icon: Users,
-        roles: ["ADMIN", "DOCTOR", "RECEPTIONIST", "LAB_TECH"],
+        roles: ["ADMIN", "DOCTOR", "NURSE", "RECEPTIONIST", "LAB_TECH"],
       },
       {
         label: "Consultations",

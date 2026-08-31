@@ -59,21 +59,15 @@ export default async function PatientProfilePage({
   const canViewConsult = user.role === "DOCTOR" || user.role === "ADMIN";
   const fullName = `${patient.firstName} ${patient.lastName}`;
 
-  // Vitals recorded across visits, oldest → newest, for the trend charts.
+  // Vitals recorded at triage across visits, oldest → newest, for the charts.
   const vitalsData: VitalsPoint[] = patient.visits
-    .filter(
-      (v) =>
-        v.consultation &&
-        (v.consultation.systolic ||
-          v.consultation.weightKg ||
-          v.consultation.temperature),
-    )
+    .filter((v) => v.systolic || v.weightKg || v.temperature)
     .map((v) => ({
       date: formatDate(v.createdAt),
-      systolic: v.consultation!.systolic,
-      diastolic: v.consultation!.diastolic,
-      weight: v.consultation!.weightKg,
-      temp: v.consultation!.temperature,
+      systolic: v.systolic,
+      diastolic: v.diastolic,
+      weight: v.weightKg,
+      temp: v.temperature,
     }))
     .reverse();
 

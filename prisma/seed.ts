@@ -63,6 +63,9 @@ async function main() {
   const labtech = await prisma.user.create({
     data: { name: "Céline Fomba", email: "lab@hospital.cm", passwordHash, role: "LAB_TECH" },
   });
+  const nurse = await prisma.user.create({
+    data: { name: "Agnes Ndifor", email: "nurse@hospital.cm", passwordHash, role: "NURSE" },
+  });
   console.log("✔ Users created");
 
   // --- Drugs (+ initial stock via PURCHASE ledger entries) ----------------
@@ -288,6 +291,18 @@ async function main() {
           chiefComplaint: "Fever and general body pains",
           createdById: receptionist.id,
           createdAt: when,
+          // vitals recorded by the nurse at triage
+          triagePriority: "NORMAL",
+          temperature: 37 + ((day + v) % 4) * 0.5,
+          systolic: 110 + ((day + v) % 3) * 10,
+          diastolic: 70 + ((day + v) % 2) * 10,
+          pulse: 72 + ((day + v) % 5) * 3,
+          respRate: 16 + ((day + v) % 3),
+          spo2: 96 + ((day + v) % 4),
+          weightKg: 55 + ((day + v) % 6) * 4,
+          heightCm: 160 + ((day + v) % 5) * 3,
+          triagedById: nurse.id,
+          triagedAt: when,
         },
       });
 
@@ -295,12 +310,6 @@ async function main() {
         data: {
           visitId: visit.id,
           doctorId: attendingDoctor.id,
-          temperature: 37 + ((day + v) % 4) * 0.5,
-          systolic: 110 + ((day + v) % 3) * 10,
-          diastolic: 70 + ((day + v) % 2) * 10,
-          pulse: 72 + ((day + v) % 5) * 3,
-          weightKg: 55 + ((day + v) % 6) * 4,
-          heightCm: 160 + ((day + v) % 5) * 3,
           symptoms: "Fever, headache, fatigue",
           diagnosis: diagnoses[basketIdx],
           notes: "Patient advised rest and hydration. Review if symptoms persist.",
@@ -349,7 +358,7 @@ async function main() {
   const today = new Date();
   today.setHours(8, 0, 0, 0);
 
-  // 1) Waiting for doctor
+  // 1) Waiting for triage (nurse hasn't taken vitals yet)
   await prisma.visit.create({
     data: {
       visitNumber: `V-${String(historicalVisits + 1).padStart(6, "0")}`,
@@ -361,39 +370,79 @@ async function main() {
     },
   });
 
-  // 2) With doctor
+  // 2) Triaged — vitals taken, waiting for the doctor
   await prisma.visit.create({
     data: {
       visitNumber: `V-${String(historicalVisits + 2).padStart(6, "0")}`,
+      patientId: patients[9].id,
+      status: "TRIAGED",
+      chiefComplaint: "Severe headache and dizziness",
+      createdById: receptionist.id,
+      createdAt: new Date(today.getTime() + 18 * 60000),
+      triagePriority: "URGENT",
+      triageNotes: "BP elevated; patient looks unwell.",
+      temperature: 37.6,
+      systolic: 158,
+      diastolic: 96,
+      pulse: 92,
+      respRate: 20,
+      spo2: 97,
+      weightKg: 74,
+      heightCm: 168,
+      triagedById: nurse.id,
+      triagedAt: new Date(today.getTime() + 18 * 60000),
+    },
+  });
+
+  // 3) With doctor
+  await prisma.visit.create({
+    data: {
+      visitNumber: `V-${String(historicalVisits + 3).padStart(6, "0")}`,
       patientId: patients[3].id,
       status: "WITH_DOCTOR",
       chiefComplaint: "High fever and chills",
       createdById: receptionist.id,
       createdAt: new Date(today.getTime() + 25 * 60000),
+      triagePriority: "NORMAL",
+      temperature: 39.1,
+      systolic: 118,
+      diastolic: 76,
+      pulse: 98,
+      respRate: 18,
+      spo2: 98,
+      weightKg: 61,
+      heightCm: 165,
+      triagedById: nurse.id,
+      triagedAt: new Date(today.getTime() + 22 * 60000),
     },
   });
 
-  // 3) At pharmacy — doctor done, prescription pending dispensing
+  // 4) At pharmacy — doctor done, prescription pending dispensing
   const pharmVisit = await prisma.visit.create({
     data: {
-      visitNumber: `V-${String(historicalVisits + 3).padStart(6, "0")}`,
+      visitNumber: `V-${String(historicalVisits + 4).padStart(6, "0")}`,
       patientId: patients[6].id,
       status: "PHARMACY",
       chiefComplaint: "Stomach pain and nausea",
       createdById: receptionist.id,
       createdAt: new Date(today.getTime() + 40 * 60000),
+      triagePriority: "NORMAL",
+      temperature: 38.2,
+      systolic: 120,
+      diastolic: 80,
+      pulse: 88,
+      respRate: 17,
+      spo2: 98,
+      weightKg: 68,
+      heightCm: 172,
+      triagedById: nurse.id,
+      triagedAt: new Date(today.getTime() + 45 * 60000),
     },
   });
   const pharmConsult = await prisma.consultation.create({
     data: {
       visitId: pharmVisit.id,
       doctorId: doctor.id,
-      temperature: 38.2,
-      systolic: 120,
-      diastolic: 80,
-      pulse: 88,
-      weightKg: 68,
-      heightCm: 172,
       symptoms: "Epigastric pain, nausea after meals",
       diagnosis: "Peptic ulcer disease",
       notes: "Start PPI, avoid NSAIDs and spicy food.",
@@ -474,7 +523,7 @@ async function main() {
   console.log("✔ Appointments created");
   console.log("\n✅ Seed complete!");
   console.log("   Login with any of:");
-  console.log("     admin@ / doctor@ / pharmacist@ / reception@ / lab@hospital.cm");
+  console.log("     admin@ / doctor@ / nurse@ / pharmacist@ / reception@ / lab@hospital.cm");
   console.log(`   Password: ${DEMO_PASSWORD}\n`);
 }
 

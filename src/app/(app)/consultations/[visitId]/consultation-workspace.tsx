@@ -7,6 +7,7 @@ import { Plus, Trash2, Loader2, Send, CheckCircle2, Check } from "lucide-react";
 import { saveConsultation } from "../actions";
 import { formatFCFA } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { TriagePriorityBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,18 +62,16 @@ export function ConsultationWorkspace({
   visitId,
   drugs,
   labTests,
+  triageVitals,
+  triagePriority,
   initial,
 }: {
   visitId: string;
   drugs: DrugOption[];
   labTests: LabTestOption[];
+  triageVitals: { label: string; value: string }[];
+  triagePriority?: string | null;
   initial?: {
-    temperature?: string;
-    systolic?: string;
-    diastolic?: string;
-    pulse?: string;
-    weightKg?: string;
-    heightCm?: string;
     symptoms?: string;
     diagnosis?: string;
     notes?: string;
@@ -91,14 +90,6 @@ export function ConsultationWorkspace({
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
 
-  const [vitals, setVitals] = useState({
-    temperature: initial?.temperature ?? "",
-    systolic: initial?.systolic ?? "",
-    diastolic: initial?.diastolic ?? "",
-    pulse: initial?.pulse ?? "",
-    weightKg: initial?.weightKg ?? "",
-    heightCm: initial?.heightCm ?? "",
-  });
   const [symptoms, setSymptoms] = useState(initial?.symptoms ?? "");
   const [diagnosis, setDiagnosis] = useState(initial?.diagnosis ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
@@ -129,9 +120,6 @@ export function ConsultationWorkspace({
     return sum + (drug ? drug.unitPrice * qty : 0);
   }, 0);
 
-  const setVital = (k: keyof typeof vitals, v: string) =>
-    setVitals((prev) => ({ ...prev, [k]: v }));
-
   function handleSave() {
     if (!diagnosis.trim()) {
       toast.error("Please enter a diagnosis before saving.");
@@ -155,12 +143,6 @@ export function ConsultationWorkspace({
     startTransition(async () => {
       const res = await saveConsultation({
         visitId,
-        temperature: vitals.temperature || undefined,
-        systolic: vitals.systolic || undefined,
-        diastolic: vitals.diastolic || undefined,
-        pulse: vitals.pulse || undefined,
-        weightKg: vitals.weightKg || undefined,
-        heightCm: vitals.heightCm || undefined,
         symptoms,
         diagnosis,
         notes,
@@ -192,72 +174,34 @@ export function ConsultationWorkspace({
 
   return (
     <div className="space-y-6">
-      {/* Vitals */}
+      {/* Vitals — read-only, recorded by the nurse at triage */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Vital signs</CardTitle>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base">
+            Vital signs{" "}
+            <span className="text-muted-foreground text-xs font-normal">
+              · recorded at triage
+            </span>
+          </CardTitle>
+          {triagePriority && triagePriority !== "NORMAL" && (
+            <TriagePriorityBadge priority={triagePriority} />
+          )}
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          <div>
-            <Label htmlFor="v-temperature" className="text-xs">Temp (°C)</Label>
-            <Input
-              id="v-temperature"
-              className="mt-1.5"
-              inputMode="decimal"
-              value={vitals.temperature}
-              onChange={(e) => setVital("temperature", e.target.value)}
-            />
-          </div>
-          <div>
-            <Label htmlFor="v-systolic" className="text-xs">Systolic</Label>
-            <Input
-              id="v-systolic"
-              className="mt-1.5"
-              inputMode="numeric"
-              value={vitals.systolic}
-              onChange={(e) => setVital("systolic", e.target.value)}
-            />
-          </div>
-          <div>
-            <Label htmlFor="v-diastolic" className="text-xs">Diastolic</Label>
-            <Input
-              id="v-diastolic"
-              className="mt-1.5"
-              inputMode="numeric"
-              value={vitals.diastolic}
-              onChange={(e) => setVital("diastolic", e.target.value)}
-            />
-          </div>
-          <div>
-            <Label htmlFor="v-pulse" className="text-xs">Pulse (bpm)</Label>
-            <Input
-              id="v-pulse"
-              className="mt-1.5"
-              inputMode="numeric"
-              value={vitals.pulse}
-              onChange={(e) => setVital("pulse", e.target.value)}
-            />
-          </div>
-          <div>
-            <Label htmlFor="v-weight" className="text-xs">Weight (kg)</Label>
-            <Input
-              id="v-weight"
-              className="mt-1.5"
-              inputMode="decimal"
-              value={vitals.weightKg}
-              onChange={(e) => setVital("weightKg", e.target.value)}
-            />
-          </div>
-          <div>
-            <Label htmlFor="v-height" className="text-xs">Height (cm)</Label>
-            <Input
-              id="v-height"
-              className="mt-1.5"
-              inputMode="decimal"
-              value={vitals.heightCm}
-              onChange={(e) => setVital("heightCm", e.target.value)}
-            />
-          </div>
+        <CardContent>
+          {triageVitals.length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              No vitals were recorded at triage for this visit.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4 lg:grid-cols-6">
+              {triageVitals.map((v) => (
+                <div key={v.label}>
+                  <div className="text-muted-foreground text-xs">{v.label}</div>
+                  <div className="text-sm font-medium">{v.value}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -19,6 +19,7 @@ import {
 const ROLE_TINT: Record<Role, string> = {
   ADMIN: "bg-violet-100 text-violet-800 dark:bg-violet-500/15 dark:text-violet-300",
   DOCTOR: "bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300",
+  NURSE: "bg-pink-100 text-pink-800 dark:bg-pink-500/15 dark:text-pink-300",
   PHARMACIST:
     "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300",
   RECEPTIONIST:
